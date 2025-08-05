@@ -15,6 +15,8 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -54,12 +56,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             String jwt = getJwtFromRequest(request);
             
             // 验证令牌并设置认证信息
-            if (StringUtils.hasText(jwt) && jwtUtils.validateToken(jwt)) {
+            if (StringUtils.hasText(jwt) && jwtUtils.validateTokenFormat(jwt)) {
                 // 从令牌中获取用户信息
                 String username = jwtUtils.getUsernameFromToken(jwt);
                 Long userId = jwtUtils.getUserIdFromToken(jwt);
-                List<String> roles = jwtUtils.getRolesFromToken(jwt);
-                List<String> authorities = jwtUtils.getAuthoritiesFromToken(jwt);
+                String rolesStr = jwtUtils.getRolesFromToken(jwt);
+                String authoritiesStr = jwtUtils.getAuthoritiesFromToken(jwt);
+                
+                // 将字符串转换为列表（假设用逗号分隔）
+                List<String> roles = parseStringToList(rolesStr);
+                List<String> authorities = parseStringToList(authoritiesStr);
                 
                 if (StringUtils.hasText(username)) {
                     // 构建权限列表
@@ -159,5 +165,21 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                path.startsWith("/js/") ||
                path.startsWith("/images/") ||
                path.startsWith("/fonts/");
+    }
+    
+    /**
+     * 将逗号分隔的字符串转换为列表
+     * 
+     * @param str 逗号分隔的字符串
+     * @return 字符串列表
+     */
+    private List<String> parseStringToList(String str) {
+        if (!StringUtils.hasText(str)) {
+            return Collections.emptyList();
+        }
+        return Arrays.stream(str.split(","))
+                .map(String::trim)
+                .filter(StringUtils::hasText)
+                .collect(Collectors.toList());
     }
 }

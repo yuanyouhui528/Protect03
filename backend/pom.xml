@@ -22,9 +22,9 @@
 
     <!-- 属性配置 -->
     <properties>
-        <java.version>8</java.version>
-        <maven.compiler.source>8</maven.compiler.source>
-        <maven.compiler.target>8</maven.compiler.target>
+        <java.version>17</java.version>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         
@@ -38,7 +38,7 @@
         <jwt.version>0.11.5</jwt.version>
         <swagger.version>3.0.0</swagger.version>
         <hutool.version>5.8.18</hutool.version>
-        <fastjson.version>2.0.32</fastjson.version>
+        <fastjson.version>2.0.25</fastjson.version>
     </properties>
 
     <!-- 依赖管理 -->
@@ -105,6 +105,13 @@
             <version>${mysql.version}</version>
         </dependency>
 
+        <!-- H2 内存数据库 (用于开发测试) -->
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
         <!-- JWT 依赖 -->
         <dependency>
             <groupId>io.jsonwebtoken</groupId>
@@ -124,12 +131,8 @@
             <scope>runtime</scope>
         </dependency>
 
-        <!-- Swagger API 文档 -->
-        <dependency>
-            <groupId>io.springfox</groupId>
-            <artifactId>springfox-boot-starter</artifactId>
-            <version>${swagger.version}</version>
-        </dependency>
+        <!-- Swagger API 文档 (非H2环境) -->
+        <!-- 注意：Swagger依赖已移至profiles配置中 -->
 
         <!-- Hutool 工具类 -->
         <dependency>
@@ -138,11 +141,18 @@
             <version>${hutool.version}</version>
         </dependency>
 
-        <!-- FastJSON -->
+        <!-- FastJSON2 -->
         <dependency>
-            <groupId>com.alibaba</groupId>
+            <groupId>com.alibaba.fastjson2</groupId>
             <artifactId>fastjson2</artifactId>
             <version>${fastjson.version}</version>
+        </dependency>
+
+        <!-- Lombok -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <optional>true</optional>
         </dependency>
 
         <!-- Spring Boot Test Starter -->
@@ -160,6 +170,37 @@
         </dependency>
     </dependencies>
 
+    <!-- Maven Profiles 配置 -->
+    <profiles>
+        <!-- 默认Profile (包含Swagger) -->
+        <profile>
+            <id>default</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <dependencies>
+                <!-- Swagger API 文档 -->
+                <dependency>
+                    <groupId>io.springfox</groupId>
+                    <artifactId>springfox-boot-starter</artifactId>
+                    <version>${swagger.version}</version>
+                </dependency>
+            </dependencies>
+        </profile>
+        
+        <!-- H2测试Profile (不包含Swagger) -->
+        <profile>
+            <id>h2</id>
+            <activation>
+                <property>
+                    <name>spring.profiles.active</name>
+                    <value>h2</value>
+                </property>
+            </activation>
+            <!-- H2 profile下不包含Swagger依赖 -->
+        </profile>
+    </profiles>
+
     <!-- 构建配置 -->
     <build>
         <plugins>
@@ -174,8 +215,8 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
-                    <source>8</source>
-                    <target>8</target>
+                    <source>17</source>
+                    <target>17</target>
                     <encoding>UTF-8</encoding>
                 </configuration>
             </plugin>

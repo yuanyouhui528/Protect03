@@ -57,16 +57,7 @@ public class MybatisPlusConfig {
         return interceptor;
     }
 
-    /**
-     * 元数据对象处理器
-     * 自动填充创建时间、更新时间、创建人、更新人等字段
-     * 
-     * @return MetaObjectHandler
-     */
-    @Bean
-    public MetaObjectHandler metaObjectHandler() {
-        return new CustomMetaObjectHandler();
-    }
+    // 注意：CustomMetaObjectHandler已使用@Component注解，无需重复定义Bean
 
     /**
      * 自定义元数据对象处理器

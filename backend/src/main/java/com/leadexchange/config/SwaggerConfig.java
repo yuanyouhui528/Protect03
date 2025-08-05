@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 
 import java.util.Arrays;
 import java.util.List;
@@ -20,11 +21,13 @@ import java.util.List;
 /**
  * Swagger配置类
  * 配置API文档生成和JWT认证
+ * 在H2测试环境下禁用以避免初始化问题
  * 
  * @author AI Assistant
  * @since 1.0.0
  */
 @Configuration
+@Profile("!h2")
 public class SwaggerConfig {
 
     private static final Logger logger = LoggerFactory.getLogger(SwaggerConfig.class);
@@ -35,9 +38,6 @@ public class SwaggerConfig {
     @Value("${spring.application.name:招商线索流通平台}")
     private String applicationName;
 
-    @Value("${swagger.enabled:true}")
-    private boolean swaggerEnabled;
-
     /**
      * 配置OpenAPI文档
      * 
@@ -45,10 +45,6 @@ public class SwaggerConfig {
      */
     @Bean
     public OpenAPI customOpenAPI() {
-        if (!swaggerEnabled) {
-            logger.info("Swagger文档已禁用");
-            return new OpenAPI();
-        }
 
         // JWT安全方案
         SecurityScheme jwtSecurityScheme = new SecurityScheme()

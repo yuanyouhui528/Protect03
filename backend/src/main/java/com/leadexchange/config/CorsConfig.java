@@ -64,59 +64,7 @@ public class CorsConfig implements WebMvcConfigurer {
                 Arrays.toString(allowedOrigins), Arrays.toString(allowedMethods), maxAge);
     }
 
-    /**
-     * 配置CORS配置源
-     * 用于Spring Security的CORS配置
-     * 
-     * @return CorsConfigurationSource
-     */
-    @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration configuration = new CorsConfiguration();
-        
-        // 设置允许的源
-        if (allowedOrigins.length == 1 && "*".equals(allowedOrigins[0])) {
-            configuration.setAllowedOriginPatterns(Collections.singletonList("*"));
-        } else {
-            configuration.setAllowedOriginPatterns(Arrays.asList(allowedOrigins));
-        }
-        
-        // 设置允许的HTTP方法
-        configuration.setAllowedMethods(Arrays.asList(allowedMethods));
-        
-        // 设置允许的请求头
-        if (allowedHeaders.length == 1 && "*".equals(allowedHeaders[0])) {
-            configuration.setAllowedHeaders(Collections.singletonList("*"));
-        } else {
-            configuration.setAllowedHeaders(Arrays.asList(allowedHeaders));
-        }
-        
-        // 设置暴露的响应头
-        configuration.setExposedHeaders(Arrays.asList(exposedHeaders));
-        
-        // 是否允许携带凭证
-        configuration.setAllowCredentials(allowCredentials);
-        
-        // 预检请求的缓存时间
-        configuration.setMaxAge(maxAge);
-        
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration);
-        
-        logger.info("CORS配置源创建完成");
-        return source;
-    }
+    // 注意：corsConfigurationSource Bean已在SecurityConfig中定义，避免重复定义
 
-    /**
-     * 配置CORS过滤器
-     * 提供更细粒度的CORS控制
-     * 
-     * @return CorsFilter
-     */
-    @Bean
-    public CorsFilter corsFilter() {
-        CorsFilter corsFilter = new CorsFilter(corsConfigurationSource());
-        logger.info("CORS过滤器配置完成");
-        return corsFilter;
-    }
+    // 注意：CORS过滤器已通过SecurityConfig中的corsConfigurationSource配置
 }

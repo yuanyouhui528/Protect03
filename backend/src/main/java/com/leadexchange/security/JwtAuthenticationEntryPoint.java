@@ -60,7 +60,7 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
         response.setHeader("Access-Control-Allow-Headers", "Authorization, Content-Type, X-Requested-With");
         
         // 构建错误响应
-        Result<Void> result = Result.error(ResultCode.UNAUTHORIZED, "访问被拒绝，请先登录");
+        Result<Void> result = Result.error(ResultCode.UNAUTHORIZED.getCode(), "访问被拒绝，请先登录");
         
         // 写入响应
         String jsonResponse = objectMapper.writeValueAsString(result);

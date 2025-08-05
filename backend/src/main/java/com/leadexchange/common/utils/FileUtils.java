@@ -146,25 +146,44 @@ public class FileUtils {
     public static String getContentType(String filename) {
         String extension = getFileExtension(filename);
         
-        return switch (extension) {
-            case "jpg", "jpeg" -> "image/jpeg";
-            case "png" -> "image/png";
-            case "gif" -> "image/gif";
-            case "bmp" -> "image/bmp";
-            case "webp" -> "image/webp";
-            case "pdf" -> "application/pdf";
-            case "doc" -> "application/msword";
-            case "docx" -> "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
-            case "xls" -> "application/vnd.ms-excel";
-            case "xlsx" -> "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
-            case "ppt" -> "application/vnd.ms-powerpoint";
-            case "pptx" -> "application/vnd.openxmlformats-officedocument.presentationml.presentation";
-            case "txt" -> "text/plain";
-            case "zip" -> "application/zip";
-            case "rar" -> "application/x-rar-compressed";
-            case "7z" -> "application/x-7z-compressed";
-            default -> "application/octet-stream";
-        };
+        // 使用传统switch语句确保Java 8+兼容性
+        switch (extension) {
+            case "jpg":
+            case "jpeg":
+                return "image/jpeg";
+            case "png":
+                return "image/png";
+            case "gif":
+                return "image/gif";
+            case "bmp":
+                return "image/bmp";
+            case "webp":
+                return "image/webp";
+            case "pdf":
+                return "application/pdf";
+            case "doc":
+                return "application/msword";
+            case "docx":
+                return "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+            case "xls":
+                return "application/vnd.ms-excel";
+            case "xlsx":
+                return "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+            case "ppt":
+                return "application/vnd.ms-powerpoint";
+            case "pptx":
+                return "application/vnd.openxmlformats-officedocument.presentationml.presentation";
+            case "txt":
+                return "text/plain";
+            case "zip":
+                return "application/zip";
+            case "rar":
+                return "application/x-rar-compressed";
+            case "7z":
+                return "application/x-7z-compressed";
+            default:
+                return "application/octet-stream";
+        }
     }
 
     /**

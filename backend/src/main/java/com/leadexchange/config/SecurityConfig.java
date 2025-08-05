@@ -188,14 +188,10 @@ public class SecurityConfig {
                 .antMatchers("/api/admin/**").hasRole("ADMIN")
                 
                 // 用户管理接口 - 需要USER或ADMIN角色
-                .antMatchers(
-                    HttpMethod.GET, "/api/users/**"
-                ).hasAnyRole("USER", "ADMIN")
-                .antMatchers(
-                    HttpMethod.POST, "/api/users/**",
-                    HttpMethod.PUT, "/api/users/**",
-                    HttpMethod.DELETE, "/api/users/**"
-                ).hasRole("ADMIN")
+                .antMatchers(HttpMethod.GET, "/api/users/**").hasAnyRole("USER", "ADMIN")
+                .antMatchers(HttpMethod.POST, "/api/users/**").hasRole("ADMIN")
+                .antMatchers(HttpMethod.PUT, "/api/users/**").hasRole("ADMIN")
+                .antMatchers(HttpMethod.DELETE, "/api/users/**").hasRole("ADMIN")
                 
                 // 线索管理接口 - 需要认证
                 .antMatchers("/api/leads/**").authenticated()

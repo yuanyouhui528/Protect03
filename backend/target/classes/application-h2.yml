@@ -1,0 +1,111 @@
+# H2内存数据库配置 - 用于快速开发测试
+server:
+  port: 8080
+
+spring:
+  # 应用配置
+  application:
+    name: lead-exchange-backend
+  
+  # 自动配置排除 - 禁用Elasticsearch、Redis仓库和Springfox自动配置
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.elasticsearch.ElasticsearchRestClientAutoConfiguration
+      - org.springframework.boot.autoconfigure.data.elasticsearch.ElasticsearchDataAutoConfiguration
+      - org.springframework.boot.autoconfigure.data.elasticsearch.ElasticsearchRepositoriesAutoConfiguration
+      - org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration
+      - springfox.boot.starter.autoconfigure.SpringfoxAutoConfiguration
+  
+  # H2数据源配置
+  datasource:
+    url: jdbc:h2:mem:lead_exchange_dev;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: 
+  
+  # H2控制台配置
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+      settings:
+        web-allow-others: true
+  
+  # JPA配置 - H2环境
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.H2Dialect
+  
+  # Redis配置 - 开发环境 (可选)
+  redis:
+    host: localhost
+    port: 6379
+    password: 
+    database: 1
+  
+  # RabbitMQ配置 - 开发环境 (可选)
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
+  
+  # Elasticsearch配置 - H2环境下禁用
+  elasticsearch:
+    enabled: false
+
+# 日志配置 - H2环境
+logging:
+  level:
+    com.leadexchange: DEBUG
+    org.springframework.security: DEBUG
+    org.springframework.web: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+    org.springframework.data.elasticsearch: DEBUG
+  pattern:
+    console: '%clr(%d{yyyy-MM-dd HH:mm:ss.SSS}){faint} %clr(%5p) %clr(${PID:- }){magenta} %clr(---){faint} %clr([%15.15t]){faint} %clr(%-40.40logger{39}){cyan} %clr(:){faint} %m%n%wEx'
+
+# 应用配置 - H2环境
+app:
+  # JWT配置
+  jwt:
+    secret: h2TestSecretKeyForLeadExchange2024
+    expiration: 86400000  # 24小时
+  
+  # 文件上传配置
+  upload:
+    path: D:/uploads/lead-exchange-h2/
+  
+  # 跨域配置
+  cors:
+    allowed-origins: 
+      - http://localhost:5173
+      - http://localhost:3000
+      - http://127.0.0.1:5173
+    allowed-methods:
+      - GET
+      - POST
+      - PUT
+      - DELETE
+      - OPTIONS
+    allowed-headers: "*"
+    allow-credentials: true
+
+# Swagger配置 - H2环境下禁用
+swagger:
+  enabled: false
+
+# Swagger配置 - H2环境
+springfox:
+  documentation:
+    swagger-ui:
+      enabled: true
+    swagger:
+      v2:
+        path: /api-docs

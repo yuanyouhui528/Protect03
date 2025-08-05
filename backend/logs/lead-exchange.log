@@ -1,0 +1,32 @@
+2025-08-06 06:15:26.681 [main] INFO  com.leadexchange.LeadExchangeApplication - Starting LeadExchangeApplication using Java 23.0.2 on lpz with PID 18448 (C:\Users\李鹏洲\Desktop\project03\backend\target\classes started by 李鹏洲 in C:\Users\李鹏洲\Desktop\project03\backend)
+2025-08-06 06:15:26.705 [main] DEBUG com.leadexchange.LeadExchangeApplication - Running with Spring Boot v2.7.18, Spring v5.3.31
+2025-08-06 06:15:26.707 [main] INFO  com.leadexchange.LeadExchangeApplication - The following 1 profile is active: "dev"
+2025-08-06 06:15:27.935 [main] WARN  o.s.b.w.s.c.AnnotationConfigServletWebServerApplicationContext - Exception encountered during context initialization - cancelling refresh attempt: org.springframework.beans.factory.BeanDefinitionStoreException: Failed to parse configuration class [com.leadexchange.LeadExchangeApplication]; nested exception is org.springframework.context.annotation.ConflictingBeanDefinitionException: Annotation-specified bean name 'authController' for bean class [com.leadexchange.controller.auth.AuthController] conflicts with existing, non-compatible bean definition of same name and class [com.leadexchange.controller.AuthController]
+2025-08-06 06:15:28.460 [main] INFO  o.s.b.a.l.ConditionEvaluationReportLoggingListener - 
+
+Error starting ApplicationContext. To display the conditions report re-run your application with 'debug' enabled.
+2025-08-06 06:15:28.539 [main] ERROR org.springframework.boot.SpringApplication - Application run failed
+org.springframework.beans.factory.BeanDefinitionStoreException: Failed to parse configuration class [com.leadexchange.LeadExchangeApplication]; nested exception is org.springframework.context.annotation.ConflictingBeanDefinitionException: Annotation-specified bean name 'authController' for bean class [com.leadexchange.controller.auth.AuthController] conflicts with existing, non-compatible bean definition of same name and class [com.leadexchange.controller.AuthController]
+	at org.springframework.context.annotation.ConfigurationClassParser.parse(ConfigurationClassParser.java:188)
+	at org.springframework.context.annotation.ConfigurationClassPostProcessor.processConfigBeanDefinitions(ConfigurationClassPostProcessor.java:331)
+	at org.springframework.context.annotation.ConfigurationClassPostProcessor.postProcessBeanDefinitionRegistry(ConfigurationClassPostProcessor.java:247)
+	at org.springframework.context.support.PostProcessorRegistrationDelegate.invokeBeanDefinitionRegistryPostProcessors(PostProcessorRegistrationDelegate.java:311)
+	at org.springframework.context.support.PostProcessorRegistrationDelegate.invokeBeanFactoryPostProcessors(PostProcessorRegistrationDelegate.java:112)
+	at org.springframework.context.support.AbstractApplicationContext.invokeBeanFactoryPostProcessors(AbstractApplicationContext.java:756)
+	at org.springframework.context.support.AbstractApplicationContext.refresh(AbstractApplicationContext.java:572)
+	at org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext.refresh(ServletWebServerApplicationContext.java:147)
+	at org.springframework.boot.SpringApplication.refresh(SpringApplication.java:732)
+	at org.springframework.boot.SpringApplication.refreshContext(SpringApplication.java:409)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:308)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1300)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1289)
+	at com.leadexchange.LeadExchangeApplication.main(LeadExchangeApplication.java:30)
+Caused by: org.springframework.context.annotation.ConflictingBeanDefinitionException: Annotation-specified bean name 'authController' for bean class [com.leadexchange.controller.auth.AuthController] conflicts with existing, non-compatible bean definition of same name and class [com.leadexchange.controller.AuthController]
+	at org.springframework.context.annotation.ClassPathBeanDefinitionScanner.checkCandidate(ClassPathBeanDefinitionScanner.java:349)
+	at org.springframework.context.annotation.ClassPathBeanDefinitionScanner.doScan(ClassPathBeanDefinitionScanner.java:287)
+	at org.springframework.context.annotation.ComponentScanAnnotationParser.parse(ComponentScanAnnotationParser.java:128)
+	at org.springframework.context.annotation.ConfigurationClassParser.doProcessConfigurationClass(ConfigurationClassParser.java:295)
+	at org.springframework.context.annotation.ConfigurationClassParser.processConfigurationClass(ConfigurationClassParser.java:249)
+	at org.springframework.context.annotation.ConfigurationClassParser.parse(ConfigurationClassParser.java:206)
+	at org.springframework.context.annotation.ConfigurationClassParser.parse(ConfigurationClassParser.java:174)
+	... 13 common frames omitted

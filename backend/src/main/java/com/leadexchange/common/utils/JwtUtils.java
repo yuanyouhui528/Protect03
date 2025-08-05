@@ -318,6 +318,96 @@ public class JwtUtils {
         }
     }
 
+    /**
+     * 获取令牌过期时间（秒）
+     * 用于Redis缓存TTL设置
+     * 
+     * @param token JWT令牌
+     * @return 过期时间（秒）
+     */
+    public Long getTokenExpiration(String token) {
+        return getTokenRemainingTime(token);
+    }
+
+    /**
+     * 验证刷新令牌
+     * 
+     * @param refreshToken 刷新令牌
+     * @return 是否有效
+     */
+    public boolean validateRefreshToken(String refreshToken) {
+        return validateTokenFormat(refreshToken) && !isTokenExpired(refreshToken);
+    }
+
+    /**
+     * 从刷新令牌中获取用户ID
+     * 
+     * @param refreshToken 刷新令牌
+     * @return 用户ID
+     */
+    public Long getUserIdFromRefreshToken(String refreshToken) {
+        return getUserIdFromToken(refreshToken);
+    }
+
+    /**
+     * 从刷新令牌中获取用户名
+     * 
+     * @param refreshToken 刷新令牌
+     * @return 用户名
+     */
+    public String getUsernameFromRefreshToken(String refreshToken) {
+        return getUsernameFromToken(refreshToken);
+    }
+
+    /**
+     * 生成刷新令牌
+     * 
+     * @param userId 用户ID
+     * @param username 用户名
+     * @return 刷新令牌
+     */
+    public String generateRefreshToken(Long userId, String username) {
+        Map<String, Object> claims = new HashMap<>();
+        claims.put(CLAIM_KEY_USER_ID, userId);
+        claims.put(CLAIM_KEY_USERNAME, username);
+        
+        Date now = new Date();
+        Date expiryDate = new Date(now.getTime() + expiration * 7); // 刷新令牌有效期为访问令牌的7倍
+        
+        return Jwts.builder()
+                .setClaims(claims)
+                .setSubject(username)
+                .setIssuedAt(now)
+                .setExpiration(expiryDate)
+                .signWith(getSigningKey(), SignatureAlgorithm.HS512)
+                .compact();
+    }
+
+    /**
+     * 获取刷新令牌过期时间
+     * 
+     * @param refreshToken 刷新令牌
+     * @return 过期时间（毫秒时间戳）
+     */
+    public Long getRefreshTokenExpiration(String refreshToken) {
+        try {
+            Date expiration = getExpirationDateFromToken(refreshToken);
+            return expiration.getTime();
+        } catch (Exception e) {
+            logger.warn("获取刷新令牌过期时间失败: {}", e.getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * 获取访问令牌过期时间配置
+     * 
+     * @return 过期时间（毫秒）
+     */
+    public Long getExpirationTime() {
+        return expiration;
+    }
+
     // Getter methods for configuration
     public String getHeader() {
         return header;

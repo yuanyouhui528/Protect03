@@ -141,4 +141,180 @@ public class UserRegisterRequest {
     public boolean isAgreeAllTerms() {
         return Boolean.TRUE.equals(agreeTerms) && Boolean.TRUE.equals(agreePrivacy);
     }
+
+    /**
+     * 获取所在地区
+     * @return 所在地区
+     */
+    public String getLocation() {
+        return location;
+    }
+
+    /**
+     * 设置所在地区
+     * @param location 所在地区
+     */
+    public void setLocation(String location) {
+        this.location = location;
+    }
+
+    /**
+     * 获取行业
+     * @return 行业
+     */
+    public String getIndustry() {
+        return industry;
+    }
+
+    /**
+     * 设置行业
+     * @param industry 行业
+     */
+    public void setIndustry(String industry) {
+        this.industry = industry;
+    }
+
+    /**
+     * 获取企业规模
+     * @return 企业规模
+     */
+    public String getCompanySize() {
+        return companySize;
+    }
+
+    /**
+     * 设置企业规模
+     * @param companySize 企业规模
+     */
+    public void setCompanySize(String companySize) {
+        this.companySize = companySize;
+    }
+
+    /**
+     * 获取邮箱
+     * @return 邮箱
+     */
+    public String getEmail() {
+        return email;
+    }
+
+    /**
+     * 设置邮箱
+     * @param email 邮箱
+     */
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    /**
+     * 获取真实姓名
+     * @return 真实姓名
+     */
+    public String getRealName() {
+        return realName;
+    }
+
+    /**
+     * 设置真实姓名
+     * @param realName 真实姓名
+     */
+    public void setRealName(String realName) {
+        this.realName = realName;
+    }
+
+    /**
+     * 获取企业名称
+     * @return 企业名称
+     */
+    public String getCompanyName() {
+        return companyName;
+    }
+
+    /**
+     * 设置企业名称
+     * @param companyName 企业名称
+     */
+    public void setCompanyName(String companyName) {
+        this.companyName = companyName;
+    }
+
+    /**
+     * 获取职位
+     * @return 职位
+     */
+    public String getPosition() {
+        return position;
+    }
+
+    /**
+     * 设置职位
+     * @param position 职位
+     */
+    public void setPosition(String position) {
+        this.position = position;
+    }
+
+    /**
+     * 获取用户名
+     * @return 用户名
+     */
+    public String getUsername() {
+        return username;
+    }
+
+    /**
+     * 设置用户名
+     * @param username 用户名
+     */
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    /**
+     * 获取密码
+     * @return 密码
+     */
+    public String getPassword() {
+        return password;
+    }
+
+    /**
+     * 设置密码
+     * @param password 密码
+     */
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    /**
+     * 获取手机号
+     * @return 手机号
+     */
+    public String getPhone() {
+        return phone;
+    }
+
+    /**
+     * 设置手机号
+     * @param phone 手机号
+     */
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
+
+    /**
+     * 获取短信验证码
+     * @return 短信验证码
+     */
+    public String getSmsCode() {
+        return smsCode;
+    }
+
+    /**
+     * 设置短信验证码
+     * @param smsCode 短信验证码
+     */
+    public void setSmsCode(String smsCode) {
+        this.smsCode = smsCode;
+    }
 }

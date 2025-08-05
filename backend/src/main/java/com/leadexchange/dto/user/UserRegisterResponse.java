@@ -167,4 +167,107 @@ public class UserRegisterResponse {
         }
         return realName.charAt(0) + "*".repeat(realName.length() - 1);
     }
+
+    /**
+     * 创建Builder实例
+     * @return Builder实例
+     */
+    public static UserRegisterResponseBuilder builder() {
+        return new UserRegisterResponseBuilder();
+    }
+
+    /**
+     * UserRegisterResponse的Builder类
+     */
+    public static class UserRegisterResponseBuilder {
+        private Long userId;
+        private String username;
+        private String phone;
+        private String email;
+        private String realName;
+        private String companyName;
+        private Integer status;
+        private Integer verified;
+        private LocalDateTime createTime;
+        private String message;
+        private Boolean needEmailVerification;
+        private Boolean needAdminApproval;
+
+        public UserRegisterResponseBuilder userId(Long userId) {
+            this.userId = userId;
+            return this;
+        }
+
+        public UserRegisterResponseBuilder username(String username) {
+            this.username = username;
+            return this;
+        }
+
+        public UserRegisterResponseBuilder phone(String phone) {
+            this.phone = phone;
+            return this;
+        }
+
+        public UserRegisterResponseBuilder email(String email) {
+            this.email = email;
+            return this;
+        }
+
+        public UserRegisterResponseBuilder realName(String realName) {
+            this.realName = realName;
+            return this;
+        }
+
+        public UserRegisterResponseBuilder companyName(String companyName) {
+            this.companyName = companyName;
+            return this;
+        }
+
+        public UserRegisterResponseBuilder status(Integer status) {
+            this.status = status;
+            return this;
+        }
+
+        public UserRegisterResponseBuilder verified(Integer verified) {
+            this.verified = verified;
+            return this;
+        }
+
+        public UserRegisterResponseBuilder createTime(LocalDateTime createTime) {
+            this.createTime = createTime;
+            return this;
+        }
+
+        public UserRegisterResponseBuilder message(String message) {
+            this.message = message;
+            return this;
+        }
+
+        public UserRegisterResponseBuilder needEmailVerification(Boolean needEmailVerification) {
+            this.needEmailVerification = needEmailVerification;
+            return this;
+        }
+
+        public UserRegisterResponseBuilder needAdminApproval(Boolean needAdminApproval) {
+            this.needAdminApproval = needAdminApproval;
+            return this;
+        }
+
+        public UserRegisterResponse build() {
+            UserRegisterResponse response = new UserRegisterResponse();
+            response.userId = this.userId;
+            response.username = this.username;
+            response.phone = this.phone;
+            response.email = this.email;
+            response.realName = this.realName;
+            response.companyName = this.companyName;
+            response.status = this.status;
+            response.verified = this.verified;
+            response.createTime = this.createTime;
+            response.message = this.message;
+            response.needEmailVerification = this.needEmailVerification;
+            response.needAdminApproval = this.needAdminApproval;
+            return response;
+        }
+    }
 }

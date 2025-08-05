@@ -1,0 +1,122 @@
+# 生产环境配置
+server:
+  port: 8080
+
+spring:
+  # 数据源配置 - 生产环境
+  datasource:
+    url: jdbc:mysql://prod-mysql:3306/lead_exchange?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=true&serverTimezone=GMT%2B8
+    username: ${DB_USERNAME:leadexchange}
+    password: ${DB_PASSWORD:}
+    hikari:
+      minimum-idle: 10
+      maximum-pool-size: 50
+      connection-timeout: 60000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+  
+  # JPA配置 - 生产环境
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: false
+  
+  # Redis配置 - 生产环境
+  redis:
+    host: ${REDIS_HOST:prod-redis}
+    port: ${REDIS_PORT:6379}
+    password: ${REDIS_PASSWORD:}
+    database: 0
+    timeout: 10000ms
+    lettuce:
+      pool:
+        max-active: 20
+        max-wait: -1ms
+        max-idle: 10
+        min-idle: 5
+  
+  # RabbitMQ配置 - 生产环境
+  rabbitmq:
+    host: ${RABBITMQ_HOST:prod-rabbitmq}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USERNAME:leadexchange}
+    password: ${RABBITMQ_PASSWORD:}
+    virtual-host: ${RABBITMQ_VHOST:/leadexchange}
+  
+  # Elasticsearch配置 - 生产环境
+  elasticsearch:
+    uris: ${ELASTICSEARCH_URIS:http://prod-elasticsearch:9200}
+    username: ${ELASTICSEARCH_USERNAME:}
+    password: ${ELASTICSEARCH_PASSWORD:}
+
+# 日志配置 - 生产环境
+logging:
+  level:
+    com.leadexchange: INFO
+    org.springframework.security: WARN
+    org.springframework.web: WARN
+    org.hibernate.SQL: WARN
+    root: WARN
+  pattern:
+    file: '%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level [%X{traceId}] %logger{50} - %msg%n'
+  file:
+    name: /var/log/lead-exchange/application.log
+    max-size: 500MB
+    max-history: 90
+    total-size-cap: 10GB
+
+# 应用配置 - 生产环境
+app:
+  # JWT配置
+  jwt:
+    secret: ${JWT_SECRET:}
+    expiration: 7200000  # 2小时
+  
+  # 文件上传配置
+  upload:
+    path: ${UPLOAD_PATH:/data/uploads/}
+  
+  # 跨域配置
+  cors:
+    allowed-origins: 
+      - ${FRONTEND_URL:https://leadexchange.com}
+    allowed-methods:
+      - GET
+      - POST
+      - PUT
+      - DELETE
+      - OPTIONS
+    allowed-headers: "*"
+    allow-credentials: true
+
+# 监控配置 - 生产环境
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: when-authorized
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+        step: 60s
+  health:
+    redis:
+      enabled: true
+    elasticsearch:
+      enabled: true
+    rabbit:
+      enabled: true
+
+# Swagger配置 - 生产环境（禁用）
+springfox:
+  documentation:
+    swagger-ui:
+      enabled: false

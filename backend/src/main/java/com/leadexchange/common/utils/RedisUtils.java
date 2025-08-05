@@ -153,6 +153,40 @@ public class RedisUtils {
     }
 
     /**
+     * 设置键值对并指定过期时间（Redis SETEX命令）
+     * 
+     * @param key 键
+     * @param value 值
+     * @param seconds 过期时间（秒）
+     * @return true成功 false失败
+     */
+    public boolean setex(String key, Object value, long seconds) {
+        return set(key, value, seconds);
+    }
+
+    /**
+     * 获取List类型的缓存数据
+     * 
+     * @param key 键
+     * @param clazz 目标类型
+     * @param <T> 泛型类型
+     * @return List集合
+     */
+    @SuppressWarnings("unchecked")
+    public <T> List<T> getList(String key, Class<T> clazz) {
+        try {
+            Object value = get(key);
+            if (value instanceof List) {
+                return (List<T>) value;
+            }
+            return null;
+        } catch (Exception e) {
+            logger.error("获取List缓存失败: key={}, clazz={}", key, clazz.getSimpleName(), e);
+            return null;
+        }
+    }
+
+    /**
      * 递增
      * 
      * @param key 键

@@ -1,0 +1,84 @@
+# 开发环境配置
+server:
+  port: 8080
+
+spring:
+  # 数据源配置 - 开发环境
+  datasource:
+    url: jdbc:mysql://localhost:3306/lead_exchange_dev?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=false&serverTimezone=GMT%2B8&allowPublicKeyRetrieval=true
+    username: root
+    password: 123456
+  
+  # JPA配置 - 开发环境
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+  
+  # Redis配置 - 开发环境
+  redis:
+    host: localhost
+    port: 6379
+    password: 
+    database: 1  # 使用数据库1
+  
+  # RabbitMQ配置 - 开发环境
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
+  
+  # Elasticsearch配置 - 开发环境
+  elasticsearch:
+    uris: http://localhost:9200
+
+# 日志配置 - 开发环境
+logging:
+  level:
+    com.leadexchange: DEBUG
+    org.springframework.security: DEBUG
+    org.springframework.web: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+    org.springframework.data.elasticsearch: DEBUG
+  pattern:
+    console: '%clr(%d{yyyy-MM-dd HH:mm:ss.SSS}){faint} %clr(%5p) %clr(${PID:- }){magenta} %clr(---){faint} %clr([%15.15t]){faint} %clr(%-40.40logger{39}){cyan} %clr(:){faint} %m%n%wEx'
+
+# 应用配置 - 开发环境
+app:
+  # JWT配置
+  jwt:
+    secret: devSecretKeyForLeadExchange2024
+    expiration: 86400000  # 24小时
+  
+  # 文件上传配置
+  upload:
+    path: D:/uploads/lead-exchange-dev/
+  
+  # 跨域配置
+  cors:
+    allowed-origins: 
+      - http://localhost:5173
+      - http://localhost:3000
+      - http://127.0.0.1:5173
+    allowed-methods:
+      - GET
+      - POST
+      - PUT
+      - DELETE
+      - OPTIONS
+    allowed-headers: "*"
+    allow-credentials: true
+
+# Swagger配置 - 开发环境
+springfox:
+  documentation:
+    swagger-ui:
+      enabled: true
+    swagger:
+      v2:
+        path: /api-docs

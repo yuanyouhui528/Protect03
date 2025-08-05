@@ -19,12 +19,16 @@ import java.util.concurrent.TimeUnit;
  * @since 1.0.0
  */
 @Service
-@RequiredArgsConstructor
 public class SmsServiceImpl implements SmsService {
 
     private static final Logger log = LoggerFactory.getLogger(SmsServiceImpl.class);
     
     private final RedisTemplate<String, Object> redisTemplate;
+    
+    // 构造器注入
+    public SmsServiceImpl(RedisTemplate<String, Object> redisTemplate) {
+        this.redisTemplate = redisTemplate;
+    }
     
     // Redis键前缀
     private static final String SMS_CODE_PREFIX = "sms:code:";

@@ -1,0 +1,182 @@
+# 招商线索流通Web应用配置文件
+server:
+  port: 8080
+  servlet:
+    context-path: /api
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
+
+spring:
+  profiles:
+    active: dev
+  application:
+    name: lead-exchange-backend
+  
+  # 数据源配置
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/lead_exchange?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=true&serverTimezone=GMT%2B8
+    username: root
+    password: 123456
+    hikari:
+      minimum-idle: 5
+      maximum-pool-size: 20
+      auto-commit: true
+      idle-timeout: 30000
+      pool-name: DatebookHikariCP
+      max-lifetime: 1800000
+      connection-timeout: 30000
+      connection-test-query: SELECT 1
+  
+  # JPA配置
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+        format_sql: true
+  
+  # Redis配置
+  redis:
+    host: localhost
+    port: 6379
+    password: 
+    database: 0
+    timeout: 10000ms
+    lettuce:
+      pool:
+        max-active: 8
+        max-wait: -1ms
+        max-idle: 8
+        min-idle: 0
+  
+  # RabbitMQ配置
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
+    virtual-host: /
+    connection-timeout: 15000
+    publisher-confirms: true
+    publisher-returns: true
+    template:
+      mandatory: true
+    listener:
+      simple:
+        acknowledge-mode: manual
+        concurrency: 5
+        max-concurrency: 10
+        retry:
+          enabled: true
+          initial-interval: 1000
+          max-attempts: 3
+          max-interval: 10000
+          multiplier: 1.0
+  
+  # Elasticsearch配置
+  elasticsearch:
+    uris: http://localhost:9200
+    username: 
+    password: 
+    connection-timeout: 1s
+    socket-timeout: 30s
+  
+  # Jackson配置
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: GMT+8
+    serialization:
+      write-dates-as-timestamps: false
+    deserialization:
+      fail-on-unknown-properties: false
+
+# MyBatis Plus配置
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+    cache-enabled: false
+    call-setters-on-nulls: true
+    jdbc-type-for-null: 'null'
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  global-config:
+    db-config:
+      id-type: ASSIGN_ID
+      logic-delete-field: deleted
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+      update-strategy: not_null
+      insert-strategy: not_null
+      select-strategy: not_empty
+  mapper-locations: classpath*:mapper/**/*.xml
+  type-aliases-package: com.leadexchange.*.domain
+
+# 日志配置
+logging:
+  level:
+    com.leadexchange: DEBUG
+    org.springframework.security: DEBUG
+    org.springframework.web: INFO
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+  pattern:
+    console: '%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n'
+    file: '%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n'
+  file:
+    name: logs/lead-exchange.log
+    max-size: 100MB
+    max-history: 30
+
+# 应用自定义配置
+app:
+  # JWT配置
+  jwt:
+    secret: leadExchangeSecretKey2024ForJWTTokenGeneration
+    expiration: 86400000  # 24小时
+    header: Authorization
+    prefix: Bearer 
+  
+  # 文件上传配置
+  upload:
+    path: /uploads/
+    max-file-size: 10MB
+    max-request-size: 50MB
+  
+  # 线索评级配置
+  rating:
+    weights:
+      completeness: 0.3    # 信息完整度权重
+      qualification: 0.25  # 企业资质权重
+      scale: 0.25         # 企业规模权重
+      industry-value: 0.2  # 产业价值权重
+    thresholds:
+      a-grade: 80  # A级阈值
+      b-grade: 60  # B级阈值
+      c-grade: 40  # C级阈值
+      # D级: < 40
+  
+  # 交换价值配置
+  exchange:
+    values:
+      a-grade: 8  # A级价值
+      b-grade: 4  # B级价值
+      c-grade: 2  # C级价值
+      d-grade: 1  # D级价值
+
+# 监控配置
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: always
+  metrics:
+    export:
+      prometheus:
+        enabled: true

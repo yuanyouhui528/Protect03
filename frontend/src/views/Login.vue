@@ -111,7 +111,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import type { FormInstance, FormRules } from 'element-plus'
 import {
@@ -122,10 +122,14 @@ import {
   ChatDotRound,
   Promotion
 } from '@element-plus/icons-vue'
-import { http } from '@/utils/request'
+import { useUserStore } from '@/stores/user'
 
 // 路由
 const router = useRouter()
+const route = useRoute()
+
+// 用户状态管理
+const userStore = useUserStore()
 
 // 应用配置
 const appTitle = import.meta.env.VITE_APP_TITLE
@@ -172,34 +176,32 @@ const handleLogin = async () => {
     
     loading.value = true
     
-    // 模拟登录请求
-    await new Promise(resolve => setTimeout(resolve, 1000))
-    
-    // 模拟登录成功
-    const mockToken = 'mock_jwt_token_' + Date.now()
-    const mockUserInfo = {
-      id: 1,
+    // 调用登录API
+    const success = await userStore.login({
       username: loginForm.username,
-      name: '张三',
-      avatar: 'https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png',
-      roles: ['user']
-    }
+      password: loginForm.password,
+      captcha: showCaptcha.value ? loginForm.captcha : undefined,
+      rememberMe: loginForm.rememberMe
+    })
     
-    // 保存登录信息
-    localStorage.setItem('access_token', mockToken)
-    localStorage.setItem('user_info', JSON.stringify(mockUserInfo))
-    
-    // 记住密码
-    if (loginForm.rememberMe) {
-      localStorage.setItem('remembered_username', loginForm.username)
+    if (success) {
+      // 记住用户名
+      if (loginForm.rememberMe) {
+        localStorage.setItem('remembered_username', loginForm.username)
+      } else {
+        localStorage.removeItem('remembered_username')
+      }
+      
+      // 获取重定向地址
+      const redirect = route.query.redirect as string || '/'
+      
+      // 跳转到目标页面
+      router.push(redirect)
     } else {
-      localStorage.removeItem('remembered_username')
+      // 登录失败后显示验证码
+      showCaptcha.value = true
+      refreshCaptcha()
     }
-    
-    ElMessage.success('登录成功')
-    
-    // 跳转到首页
-    router.push('/')
     
   } catch (error) {
     console.error('登录失败:', error)
@@ -232,7 +234,7 @@ const showForgotPassword = () => {
 
 // 注册
 const showRegister = () => {
-  ElMessage.info('注册功能开发中...')
+  router.push('/register')
 }
 
 // 短信登录
@@ -260,9 +262,9 @@ onMounted(() => {
   }
   
   // 如果已经登录，直接跳转到首页
-  const token = localStorage.getItem('access_token')
-  if (token) {
-    router.push('/')
+  if (userStore.isLoggedIn) {
+    const redirect = route.query.redirect as string || '/'
+    router.push(redirect)
   }
 })
 </script>

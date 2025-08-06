@@ -23,7 +23,7 @@ import java.time.LocalDateTime;
  * @author AI Assistant
  * @since 1.0.0
  */
-@Configuration
+// @Configuration
 public class MybatisPlusConfig {
 
     private static final Logger logger = LoggerFactory.getLogger(MybatisPlusConfig.class);

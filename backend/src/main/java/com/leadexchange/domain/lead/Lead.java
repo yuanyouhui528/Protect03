@@ -181,6 +181,22 @@ public class Lead extends BaseEntity {
     @ApiModelProperty(value = "线索描述")
     private String description;
 
+    /**
+     * 发布时间
+     */
+    @Column(name = "published_time")
+    @Field(type = FieldType.Date)
+    @ApiModelProperty(value = "发布时间")
+    private LocalDateTime publishedTime;
+
+    /**
+     * 收藏次数
+     */
+    @Column(name = "favorite_count", nullable = false, columnDefinition = "int default 0")
+    @Field(type = FieldType.Integer)
+    @ApiModelProperty(value = "收藏次数", example = "0")
+    private Integer favoriteCount = 0;
+
     // 构造函数
     public Lead() {}
 
@@ -335,6 +351,22 @@ public class Lead extends BaseEntity {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public LocalDateTime getPublishedTime() {
+        return publishedTime;
+    }
+
+    public void setPublishedTime(LocalDateTime publishedTime) {
+        this.publishedTime = publishedTime;
+    }
+
+    public Integer getFavoriteCount() {
+        return favoriteCount;
+    }
+
+    public void setFavoriteCount(Integer favoriteCount) {
+        this.favoriteCount = favoriteCount;
     }
 
     @Override

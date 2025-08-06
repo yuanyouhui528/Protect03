@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.leadexchange.repository.lead.LeadRepository">
+
+    <!-- 线索结果映射 -->
+    <resultMap id="LeadResultMap" type="com.leadexchange.domain.lead.Lead">
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <result column="owner_id" property="ownerId" jdbcType="BIGINT"/>
+        <result column="company_name" property="companyName" jdbcType="VARCHAR"/>
+        <result column="project_name" property="projectName" jdbcType="VARCHAR"/>
+        <result column="contact_person" property="contactPerson" jdbcType="VARCHAR"/>
+        <result column="contact_phone" property="contactPhone" jdbcType="VARCHAR"/>
+        <result column="contact_email" property="contactEmail" jdbcType="VARCHAR"/>
+        <result column="company_type" property="companyType" jdbcType="VARCHAR"/>
+        <result column="intended_area" property="intendedArea" jdbcType="DECIMAL"/>
+        <result column="office_type" property="officeType" jdbcType="VARCHAR"/>
+        <result column="investment_amount" property="investmentAmount" jdbcType="DECIMAL"/>
+        <result column="registered_capital" property="registeredCapital" jdbcType="DECIMAL"/>
+        <result column="industry_direction" property="industryDirection" jdbcType="VARCHAR"/>
+        <result column="intended_region" property="intendedRegion" jdbcType="VARCHAR"/>
+        <result column="status" property="status" jdbcType="VARCHAR" typeHandler="org.apache.ibatis.type.EnumTypeHandler"/>
+        <result column="rating" property="rating" jdbcType="VARCHAR" typeHandler="org.apache.ibatis.type.EnumTypeHandler"/>
+        <result column="rating_score" property="ratingScore" jdbcType="INTEGER"/>
+        <result column="audit_status" property="auditStatus" jdbcType="VARCHAR" typeHandler="org.apache.ibatis.type.EnumTypeHandler"/>
+        <result column="audit_time" property="auditTime" jdbcType="TIMESTAMP"/>
+        <result column="auditor_id" property="auditorId" jdbcType="BIGINT"/>
+        <result column="audit_remark" property="auditRemark" jdbcType="VARCHAR"/>
+        <result column="description" property="description" jdbcType="LONGVARCHAR"/>
+        <result column="view_count" property="viewCount" jdbcType="INTEGER"/>
+        <result column="favorite_count" property="favoriteCount" jdbcType="INTEGER"/>
+        <result column="exchange_count" property="exchangeCount" jdbcType="INTEGER"/>
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP"/>
+        <result column="update_time" property="updateTime" jdbcType="TIMESTAMP"/>
+        <result column="deleted" property="deleted" jdbcType="TINYINT"/>
+    </resultMap>
+
+    <!-- 基础查询字段 -->
+    <sql id="Base_Column_List">
+        id, owner_id, company_name, project_name, contact_person, contact_phone, contact_email,
+        company_type, intended_area, office_type, investment_amount, registered_capital,
+        industry_direction, intended_region, status, rating, rating_score, audit_status,
+        audit_time, auditor_id, audit_remark, description, view_count, favorite_count,
+        exchange_count, create_time, update_time, deleted
+    </sql>
+
+    <!-- 查询条件 -->
+    <sql id="Where_Clause">
+        <where>
+            <if test="ownerId != null">
+                AND owner_id = #{ownerId}
+            </if>
+            <if test="status != null">
+                AND status = #{status}
+            </if>
+            <if test="rating != null">
+                AND rating = #{rating}
+            </if>
+            <if test="auditStatus != null">
+                AND audit_status = #{auditStatus}
+            </if>
+            <if test="companyName != null and companyName != ''">
+                AND company_name LIKE CONCAT('%', #{companyName}, '%')
+            </if>
+            <if test="industryDirection != null and industryDirection != ''">
+                AND industry_direction LIKE CONCAT('%', #{industryDirection}, '%')
+            </if>
+            <if test="intendedRegion != null and intendedRegion != ''">
+                AND intended_region LIKE CONCAT('%', #{intendedRegion}, '%')
+            </if>
+            <if test="minInvestment != null">
+                AND investment_amount >= #{minInvestment}
+            </if>
+            <if test="maxInvestment != null">
+                AND investment_amount <= #{maxInvestment}
+            </if>
+            <if test="startTime != null">
+                AND create_time >= #{startTime}
+            </if>
+            <if test="endTime != null">
+                AND create_time <= #{endTime}
+            </if>
+            AND deleted = 0
+        </where>
+    </sql>
+
+    <!-- 高级搜索线索 -->
+    <select id="searchLeadsAdvanced" resultMap="LeadResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM leads
+        <include refid="Where_Clause"/>
+        <choose>
+            <when test="orderBy != null and orderBy != ''">
+                ORDER BY ${orderBy}
+                <if test="orderDirection != null and orderDirection != ''">
+                    ${orderDirection}
+                </if>
+            </when>
+            <otherwise>
+                ORDER BY create_time DESC
+            </otherwise>
+        </choose>
+    </select>
+
+    <!-- 统计线索数量（带条件） -->
+    <select id="countLeadsWithCondition" resultType="java.lang.Long">
+        SELECT COUNT(*)
+        FROM leads
+        <include refid="Where_Clause"/>
+    </select>
+
+    <!-- 查询用户收藏的线索（优化版） -->
+    <select id="selectFavoriteLeadsOptimized" resultMap="LeadResultMap">
+        SELECT
+        l.id, l.owner_id, l.company_name, l.project_name, l.contact_person, l.contact_phone, l.contact_email,
+        l.company_type, l.intended_area, l.office_type, l.investment_amount, l.registered_capital,
+        l.industry_direction, l.intended_region, l.status, l.rating, l.rating_score, l.audit_status,
+        l.audit_time, l.auditor_id, l.audit_remark, l.description, l.view_count, l.favorite_count,
+        l.exchange_count, l.create_time, l.update_time, l.deleted
+        FROM leads l
+        INNER JOIN lead_favorites lf ON l.id = lf.lead_id
+        WHERE lf.user_id = #{userId}
+        AND l.deleted = 0
+        AND l.status = 'PUBLISHED'
+        AND l.audit_status = 'APPROVED'
+        ORDER BY lf.created_at DESC
+    </select>
+
+    <!-- 批量更新线索状态 -->
+    <update id="batchUpdateStatus">
+        UPDATE leads
+        SET status = #{status}, update_time = NOW()
+        WHERE id IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+        AND deleted = 0
+    </update>
+
+    <!-- 批量软删除线索 -->
+    <update id="batchSoftDelete">
+        UPDATE leads
+        SET deleted = 1, update_time = NOW()
+        WHERE id IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+        AND deleted = 0
+    </update>
+
+    <!-- 查询重复线索（基于多个字段） -->
+    <select id="findDuplicateLeads" resultMap="LeadResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM leads
+        WHERE deleted = 0
+        AND id != #{excludeId}
+        AND (
+            (company_name = #{companyName} AND contact_phone = #{contactPhone})
+            OR (company_name = #{companyName} AND contact_email = #{contactEmail})
+            OR (contact_phone = #{contactPhone} AND investment_amount = #{investmentAmount})
+        )
+        ORDER BY create_time DESC
+        LIMIT 10
+    </select>
+
+    <!-- 获取线索统计信息 -->
+    <select id="getLeadStatistics" resultType="java.util.Map">
+        SELECT
+        COUNT(*) as total_count,
+        COUNT(CASE WHEN status = 'PUBLISHED' THEN 1 END) as published_count,
+        COUNT(CASE WHEN status = 'DRAFT' THEN 1 END) as draft_count,
+        COUNT(CASE WHEN audit_status = 'PENDING' THEN 1 END) as pending_audit_count,
+        COUNT(CASE WHEN audit_status = 'APPROVED' THEN 1 END) as approved_count,
+        COUNT(CASE WHEN rating = 'A' THEN 1 END) as a_rating_count,
+        COUNT(CASE WHEN rating = 'B' THEN 1 END) as b_rating_count,
+        COUNT(CASE WHEN rating = 'C' THEN 1 END) as c_rating_count,
+        COUNT(CASE WHEN rating = 'D' THEN 1 END) as d_rating_count,
+        SUM(view_count) as total_views,
+        SUM(favorite_count) as total_favorites
+        FROM leads
+        WHERE deleted = 0
+        <if test="ownerId != null">
+            AND owner_id = #{ownerId}
+        </if>
+        <if test="startTime != null">
+            AND create_time >= #{startTime}
+        </if>
+        <if test="endTime != null">
+            AND create_time <= #{endTime}
+        </if>
+    </select>
+
+</mapper>

@@ -15,7 +15,7 @@ import java.util.List;
  * @author AI Assistant
  * @since 1.0.0
  */
-@Mapper
+// @Mapper
 public interface PermissionRepository extends BaseMapper<Permission> {
 
     /**

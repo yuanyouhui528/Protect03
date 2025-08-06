@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.leadexchange.repository.lead.mapper.LeadFavoriteMapper">
+
+    <!-- 线索收藏结果映射 -->
+    <resultMap id="LeadFavoriteResultMap" type="com.leadexchange.domain.lead.LeadFavorite">
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <result column="user_id" property="userId" jdbcType="BIGINT"/>
+        <result column="lead_id" property="leadId" jdbcType="BIGINT"/>
+        <result column="created_at" property="createdAt" jdbcType="TIMESTAMP"/>
+        <result column="updated_at" property="updatedAt" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <!-- 基础查询字段 -->
+    <sql id="Base_Column_List">
+        id, user_id, lead_id, created_at, updated_at
+    </sql>
+
+    <!-- 根据用户ID和线索ID查询收藏记录 -->
+    <select id="selectByUserIdAndLeadId" resultMap="LeadFavoriteResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM lead_favorites
+        WHERE user_id = #{userId} AND lead_id = #{leadId}
+        LIMIT 1
+    </select>
+
+    <!-- 删除用户对特定线索的收藏 -->
+    <delete id="deleteByUserIdAndLeadId">
+        DELETE FROM lead_favorites
+        WHERE user_id = #{userId} AND lead_id = #{leadId}
+    </delete>
+
+    <!-- 统计线索的收藏次数 -->
+    <select id="countByLeadId" resultType="java.lang.Long">
+        SELECT COUNT(*)
+        FROM lead_favorites
+        WHERE lead_id = #{leadId}
+    </select>
+
+    <!-- 统计用户的收藏数量 -->
+    <select id="countByUserId" resultType="java.lang.Long">
+        SELECT COUNT(*)
+        FROM lead_favorites
+        WHERE user_id = #{userId}
+    </select>
+
+    <!-- 查询用户收藏的线索ID列表 -->
+    <select id="selectLeadIdsByUserId" resultType="java.lang.Long">
+        SELECT lead_id
+        FROM lead_favorites
+        WHERE user_id = #{userId}
+        ORDER BY created_at DESC
+        <if test="limit != null and limit > 0">
+            LIMIT #{limit}
+        </if>
+    </select>
+
+    <!-- 查询收藏了特定线索的用户ID列表 -->
+    <select id="selectUserIdsByLeadId" resultType="java.lang.Long">
+        SELECT user_id
+        FROM lead_favorites
+        WHERE lead_id = #{leadId}
+        ORDER BY created_at DESC
+        <if test="limit != null and limit > 0">
+            LIMIT #{limit}
+        </if>
+    </select>
+
+    <!-- 批量删除用户的收藏记录 -->
+    <delete id="batchDeleteByUserId">
+        DELETE FROM lead_favorites
+        WHERE user_id = #{userId}
+        AND lead_id IN
+        <foreach collection="leadIds" item="leadId" open="(" separator="," close=")">
+            #{leadId}
+        </foreach>
+    </delete>
+
+    <!-- 批量删除线索的收藏记录 -->
+    <delete id="batchDeleteByLeadId">
+        DELETE FROM lead_favorites
+        WHERE lead_id = #{leadId}
+    </delete>
+
+    <!-- 查询用户最近收藏的线索 -->
+    <select id="selectRecentFavoritesByUserId" resultMap="LeadFavoriteResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM lead_favorites
+        WHERE user_id = #{userId}
+        ORDER BY created_at DESC
+        <if test="limit != null and limit > 0">
+            LIMIT #{limit}
+        </if>
+    </select>
+
+    <!-- 检查用户是否收藏了指定线索 -->
+    <select id="existsByUserIdAndLeadId" resultType="java.lang.Boolean">
+        SELECT COUNT(*) > 0
+        FROM lead_favorites
+        WHERE user_id = #{userId} AND lead_id = #{leadId}
+    </select>
+
+    <!-- 获取收藏统计信息 -->
+    <select id="getFavoriteStatistics" resultType="java.util.Map">
+        SELECT
+        COUNT(*) as total_favorites,
+        COUNT(DISTINCT user_id) as unique_users,
+        COUNT(DISTINCT lead_id) as unique_leads,
+        DATE(created_at) as favorite_date,
+        COUNT(*) as daily_count
+        FROM lead_favorites
+        <where>
+            <if test="startTime != null">
+                AND created_at >= #{startTime}
+            </if>
+            <if test="endTime != null">
+                AND created_at <= #{endTime}
+            </if>
+            <if test="userId != null">
+                AND user_id = #{userId}
+            </if>
+            <if test="leadId != null">
+                AND lead_id = #{leadId}
+            </if>
+        </where>
+        <if test="groupByDate != null and groupByDate == true">
+            GROUP BY DATE(created_at)
+            ORDER BY favorite_date DESC
+        </if>
+    </select>
+
+</mapper>

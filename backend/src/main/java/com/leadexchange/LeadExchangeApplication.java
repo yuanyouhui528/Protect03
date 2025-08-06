@@ -2,6 +2,10 @@ package com.leadexchange;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.data.elasticsearch.ElasticsearchDataAutoConfiguration;
+import org.springframework.boot.autoconfigure.data.elasticsearch.ElasticsearchRepositoriesAutoConfiguration;
+import org.springframework.boot.autoconfigure.elasticsearch.ElasticsearchRestClientAutoConfiguration;
+import com.baomidou.mybatisplus.autoconfigure.MybatisPlusAutoConfiguration;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -12,7 +16,12 @@ import org.springframework.scheduling.annotation.EnableScheduling;
  * @author AI Assistant
  * @since 1.0.0
  */
-@SpringBootApplication
+@SpringBootApplication(exclude = {
+        ElasticsearchRepositoriesAutoConfiguration.class,
+        ElasticsearchDataAutoConfiguration.class,
+        ElasticsearchRestClientAutoConfiguration.class,
+        MybatisPlusAutoConfiguration.class
+})
 @EnableAsync
 @EnableScheduling
 @EnableJpaRepositories(basePackages = {

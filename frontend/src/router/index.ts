@@ -15,6 +15,7 @@ const Forbidden = () => import('@/views/403.vue')
 // 线索管理模块
 const LeadList = () => import('@/views/leads/LeadList.vue')
 const LeadCreate = () => import('@/views/leads/LeadCreate.vue')
+const LeadDetail = () => import('@/views/leads/LeadDetail.vue')
 const LeadFavorites = () => import('@/views/leads/LeadFavorites.vue')
 
 // 交换中心模块
@@ -98,6 +99,14 @@ const routes: RouteRecordRaw[] = [
             component: LeadCreate,
             meta: {
               title: '发布线索'
+            }
+          },
+          {
+            path: 'detail/:id',
+            name: 'LeadDetail',
+            component: LeadDetail,
+            meta: {
+              title: '线索详情'
             }
           },
           {

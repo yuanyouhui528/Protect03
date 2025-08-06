@@ -159,6 +159,29 @@ public class Result<T> implements Serializable {
     }
 
     /**
+     * 警告响应（自定义消息）
+     * 
+     * @param message 警告消息
+     * @param <T> 数据类型
+     * @return 响应结果
+     */
+    public static <T> Result<T> warning(String message) {
+        return new Result<>(ResultCode.BAD_REQUEST.getCode(), message, null);
+    }
+
+    /**
+     * 警告响应（自定义消息和数据）
+     * 
+     * @param message 警告消息
+     * @param data 响应数据
+     * @param <T> 数据类型
+     * @return 响应结果
+     */
+    public static <T> Result<T> warning(String message, T data) {
+        return new Result<>(ResultCode.BAD_REQUEST.getCode(), message, data);
+    }
+
+    /**
      * 判断是否成功
      * 
      * @return 是否成功

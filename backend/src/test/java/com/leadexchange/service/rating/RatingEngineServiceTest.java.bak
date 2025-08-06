@@ -1,0 +1,405 @@
+package com.leadexchange.service.rating;
+
+import com.leadexchange.domain.lead.Lead;
+import com.leadexchange.domain.lead.LeadRating;
+import com.leadexchange.domain.rating.RatingChangeReason;
+import com.leadexchange.domain.rating.RatingRule;
+import com.leadexchange.domain.rating.RatingRuleType;
+import com.leadexchange.repository.lead.LeadRepository;
+import com.leadexchange.service.rating.RatingEngineService.RatingResult;
+import com.leadexchange.service.rating.RatingEngineService.RatingStatistics;
+import com.leadexchange.service.rating.impl.RatingEngineServiceImpl;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
+
+/**
+ * 评级引擎服务单元测试
+ * 测试评级算法的准确性和可靠性
+ * 
+ * @author AI Assistant
+ * @since 1.0.0
+ */
+@ExtendWith(MockitoExtension.class)
+class RatingEngineServiceTest {
+
+    @Mock
+    private LeadRepository leadRepository;
+
+    @Mock
+    private RatingRuleService ratingRuleService;
+
+    @Mock
+    private RatingHistoryService ratingHistoryService;
+
+    @Mock
+    private RatingCacheService ratingCacheService;
+
+    @InjectMocks
+    private RatingEngineServiceImpl ratingEngineService;
+
+    private Lead testLead;
+    private List<RatingRule> testRules;
+
+    @BeforeEach
+    void setUp() {
+        // 创建测试线索
+        testLead = new Lead();
+        testLead.setId(1L);
+        testLead.setTitle("优质投资项目");
+        testLead.setDescription("这是一个完整的项目描述，包含详细的投资信息和企业背景");
+        testLead.setCompanyName("测试科技有限公司");
+        testLead.setInvestmentAmount(new BigDecimal("10000000"));
+        testLead.setContactPerson("张三");
+        testLead.setContactPhone("13800138000");
+        testLead.setContactEmail("test@example.com");
+        testLead.setCompanyAddress("北京市朝阳区");
+        testLead.setRegisteredCapital(new BigDecimal("5000000"));
+        testLead.setEmployeeCount(100);
+        testLead.setEstablishedYear(2020);
+        testLead.setBusinessLicense("91110000123456789X");
+        testLead.setCreateTime(LocalDateTime.now().minusDays(1));
+
+        // 创建测试评级规则
+        testRules = createTestRules();
+    }
+
+    /**
+     * 测试计算线索评级 - 正常情况
+     */
+    @Test
+    void testCalculateRating_Success() {
+        // 准备测试数据
+        when(leadRepository.findById(1L)).thenReturn(Optional.of(testLead));
+        when(ratingRuleService.getEnabledRules()).thenReturn(testRules);
+        when(ratingCacheService.getRatingResult(1L)).thenReturn(null);
+
+        // 执行测试
+        RatingResult result = ratingEngineService.calculateRating(1L);
+
+        // 验证结果
+        assertNotNull(result);
+        assertNotNull(result.getRating());
+        assertTrue(result.getScore() >= 0 && result.getScore() <= 100);
+        assertNotNull(result.getDimensionScores());
+        assertEquals(7, result.getDimensionScores().size()); // 7个评级维度
+        
+        // 验证缓存调用
+        verify(ratingCacheService).cacheRatingResult(eq(1L), any(RatingResult.class));
+        verify(ratingHistoryService).recordRatingChange(eq(1L), any(), any(), any(), any(), any());
+    }
+
+    /**
+     * 测试计算线索评级 - 线索不存在
+     */
+    @Test
+    void testCalculateRating_LeadNotFound() {
+        // 准备测试数据
+        when(leadRepository.findById(999L)).thenReturn(Optional.empty());
+
+        // 执行测试并验证异常
+        assertThrows(RuntimeException.class, () -> {
+            ratingEngineService.calculateRating(999L);
+        });
+    }
+
+    /**
+     * 测试信息完整度评分算法
+     */
+    @Test
+    void testCalculateCompletenessScore() {
+        // 使用反射调用私有方法
+        double score = (double) ReflectionTestUtils.invokeMethod(
+            ratingEngineService, "calculateCompletenessScore", testLead);
+        
+        // 验证分数范围
+        assertTrue(score >= 0 && score <= 100);
+        
+        // 测试完整信息的线索应该得到高分
+        assertTrue(score >= 80, "完整信息的线索应该得到80分以上");
+    }
+
+    /**
+     * 测试企业资质评分算法
+     */
+    @Test
+    void testCalculateQualificationScore() {
+        double score = (double) ReflectionTestUtils.invokeMethod(
+            ratingEngineService, "calculateQualificationScore", testLead);
+        
+        assertTrue(score >= 0 && score <= 100);
+        // 有营业执照的企业应该得到基础分
+        assertTrue(score >= 60, "有营业执照的企业应该得到60分以上");
+    }
+
+    /**
+     * 测试企业规模评分算法
+     */
+    @Test
+    void testCalculateScaleScore() {
+        double score = (double) ReflectionTestUtils.invokeMethod(
+            ratingEngineService, "calculateScaleScore", testLead);
+        
+        assertTrue(score >= 0 && score <= 100);
+        // 有一定规模的企业应该得到合理分数
+        assertTrue(score >= 50, "有一定规模的企业应该得到50分以上");
+    }
+
+    /**
+     * 测试产业价值评分算法
+     */
+    @Test
+    void testCalculateIndustryValueScore() {
+        double score = (double) ReflectionTestUtils.invokeMethod(
+            ratingEngineService, "calculateIndustryValueScore", testLead);
+        
+        assertTrue(score >= 0 && score <= 100);
+    }
+
+    /**
+     * 测试地理位置评分算法
+     */
+    @Test
+    void testCalculateLocationScore() {
+        double score = (double) ReflectionTestUtils.invokeMethod(
+            ratingEngineService, "calculateLocationScore", testLead);
+        
+        assertTrue(score >= 0 && score <= 100);
+        // 北京地区应该得到较高分数
+        assertTrue(score >= 70, "北京地区应该得到70分以上");
+    }
+
+    /**
+     * 测试时效性评分算法
+     */
+    @Test
+    void testCalculateTimelinessScore() {
+        double score = (double) ReflectionTestUtils.invokeMethod(
+            ratingEngineService, "calculateTimelinessScore", testLead);
+        
+        assertTrue(score >= 0 && score <= 100);
+        // 最近创建的线索应该得到较高分数
+        assertTrue(score >= 80, "最近创建的线索应该得到80分以上");
+    }
+
+    /**
+     * 测试用户信誉评分算法
+     */
+    @Test
+    void testCalculateReputationScore() {
+        double score = (double) ReflectionTestUtils.invokeMethod(
+            ratingEngineService, "calculateReputationScore", testLead);
+        
+        assertTrue(score >= 0 && score <= 100);
+    }
+
+    /**
+     * 测试批量计算评级
+     */
+    @Test
+    void testCalculateRatingBatch() {
+        // 准备测试数据
+        List<Long> leadIds = Arrays.asList(1L, 2L, 3L);
+        when(leadRepository.findById(anyLong())).thenReturn(Optional.of(testLead));
+        when(ratingRuleService.getEnabledRules()).thenReturn(testRules);
+        when(ratingCacheService.getRatingResult(anyLong())).thenReturn(null);
+
+        // 执行测试
+        List<RatingResult> results = ratingEngineService.calculateRatingBatch(leadIds);
+
+        // 验证结果
+        assertNotNull(results);
+        assertEquals(3, results.size());
+        results.forEach(result -> {
+            assertNotNull(result.getRating());
+            assertTrue(result.getScore() >= 0 && result.getScore() <= 100);
+        });
+    }
+
+    /**
+     * 测试重新计算评级
+     */
+    @Test
+    void testRecalculateRating() {
+        // 准备测试数据
+        when(leadRepository.findById(1L)).thenReturn(Optional.of(testLead));
+        when(ratingRuleService.getEnabledRules()).thenReturn(testRules);
+        when(ratingCacheService.getRatingResult(1L)).thenReturn(null);
+
+        // 执行测试
+        RatingResult result = ratingEngineService.recalculateRating(1L, RatingChangeReason.RULE_CHANGE);
+
+        // 验证结果
+        assertNotNull(result);
+        assertNotNull(result.getRating());
+        assertTrue(result.getScore() >= 0 && result.getScore() <= 100);
+        
+        // 验证缓存被清除
+        verify(ratingCacheService).deleteRatingResult(1L);
+    }
+
+    /**
+     * 测试手动调整评级
+     */
+    @Test
+    void testAdjustRating() {
+        // 准备测试数据
+        when(leadRepository.findById(1L)).thenReturn(Optional.of(testLead));
+
+        // 执行测试
+        RatingResult result = ratingEngineService.adjustRating(1L, LeadRating.A, "手动调整为A级");
+
+        // 验证结果
+        assertNotNull(result);
+        assertEquals(LeadRating.A, result.getRating());
+        assertEquals(LeadRating.A.getMinScore(), result.getScore(), 0.01);
+        
+        // 验证历史记录
+        verify(ratingHistoryService).recordRatingChange(
+            eq(1L), any(), eq(LeadRating.A), any(), eq(LeadRating.A.getMinScore()), 
+            eq(RatingChangeReason.MANUAL_ADJUST));
+    }
+
+    /**
+     * 测试获取评级统计信息
+     */
+    @Test
+    void testGetRatingStatistics() {
+        // 准备测试数据
+        LocalDateTime startTime = LocalDateTime.now().minusDays(30);
+        LocalDateTime endTime = LocalDateTime.now();
+        
+        // 模拟数据库查询结果
+        when(leadRepository.countByRatingAndCreateTimeBetween(any(), any(), any()))
+            .thenReturn(10L);
+
+        // 执行测试
+        RatingStatistics statistics = ratingEngineService.getRatingStatistics(startTime, endTime);
+
+        // 验证结果
+        assertNotNull(statistics);
+        assertTrue(statistics.getTotalCount() >= 0);
+        assertNotNull(statistics.getRatingDistribution());
+    }
+
+    /**
+     * 测试获取评级分布
+     */
+    @Test
+    void testGetRatingDistribution() {
+        // 准备测试数据
+        LocalDateTime startTime = LocalDateTime.now().minusDays(30);
+        LocalDateTime endTime = LocalDateTime.now();
+        
+        when(leadRepository.countByRatingAndCreateTimeBetween(any(), any(), any()))
+            .thenReturn(5L);
+
+        // 执行测试
+        Map<LeadRating, Long> distribution = ratingEngineService.getRatingDistribution(startTime, endTime);
+
+        // 验证结果
+        assertNotNull(distribution);
+        assertEquals(4, distribution.size()); // A、B、C、D四个等级
+        assertTrue(distribution.values().stream().allMatch(count -> count >= 0));
+    }
+
+    /**
+     * 测试验证评级规则配置
+     */
+    @Test
+    void testValidateRatingRules() {
+        // 准备测试数据
+        when(ratingRuleService.getEnabledRules()).thenReturn(testRules);
+
+        // 执行测试
+        Map<String, Object> result = ratingEngineService.validateRatingRules();
+
+        // 验证结果
+        assertNotNull(result);
+        assertTrue((Boolean) result.get("valid"));
+        assertNotNull(result.get("totalWeight"));
+        assertEquals(1.0, (Double) result.get("totalWeight"), 0.01);
+    }
+
+    /**
+     * 测试评级算法的边界情况
+     */
+    @Test
+    void testRatingAlgorithmBoundaryConditions() {
+        // 测试空线索
+        Lead emptyLead = new Lead();
+        emptyLead.setId(2L);
+        
+        when(leadRepository.findById(2L)).thenReturn(Optional.of(emptyLead));
+        when(ratingRuleService.getEnabledRules()).thenReturn(testRules);
+        when(ratingCacheService.getRatingResult(2L)).thenReturn(null);
+
+        RatingResult result = ratingEngineService.calculateRating(2L);
+        
+        // 空线索应该得到较低评级
+        assertNotNull(result);
+        assertTrue(result.getScore() < 50, "空线索应该得到较低分数");
+        assertTrue(result.getRating() == LeadRating.C || result.getRating() == LeadRating.D);
+    }
+
+    /**
+     * 测试评级一致性
+     */
+    @Test
+    void testRatingConsistency() {
+        // 准备测试数据
+        when(leadRepository.findById(1L)).thenReturn(Optional.of(testLead));
+        when(ratingRuleService.getEnabledRules()).thenReturn(testRules);
+        when(ratingCacheService.getRatingResult(1L)).thenReturn(null);
+
+        // 多次计算同一线索的评级
+        RatingResult result1 = ratingEngineService.calculateRating(1L);
+        RatingResult result2 = ratingEngineService.calculateRating(1L);
+
+        // 验证结果一致性
+        assertEquals(result1.getRating(), result2.getRating());
+        assertEquals(result1.getScore(), result2.getScore(), 0.01);
+    }
+
+    /**
+     * 创建测试评级规则
+     */
+    private List<RatingRule> createTestRules() {
+        return Arrays.asList(
+            createRule("信息完整度", RatingRuleType.COMPLETENESS, 0.20),
+            createRule("企业资质", RatingRuleType.QUALIFICATION, 0.15),
+            createRule("企业规模", RatingRuleType.SCALE, 0.15),
+            createRule("产业价值", RatingRuleType.INDUSTRY_VALUE, 0.20),
+            createRule("地理位置", RatingRuleType.LOCATION, 0.10),
+            createRule("时效性", RatingRuleType.TIMELINESS, 0.10),
+            createRule("用户信誉", RatingRuleType.REPUTATION, 0.10)
+        );
+    }
+
+    /**
+     * 创建测试规则
+     */
+    private RatingRule createRule(String name, RatingRuleType type, double weight) {
+        RatingRule rule = new RatingRule();
+        rule.setRuleName(name);
+        rule.setRuleType(type);
+        rule.setWeight(weight);
+        rule.setEnabled(true);
+        return rule;
+    }
+}

@@ -92,6 +92,18 @@ public class BusinessException extends RuntimeException {
      * 构造函数
      * 
      * @param resultCode 结果码枚举
+     * @param message 自定义错误消息
+     */
+    public BusinessException(ResultCode resultCode, String message) {
+        super(message);
+        this.code = resultCode.getCode();
+        this.message = message;
+    }
+
+    /**
+     * 构造函数
+     * 
+     * @param resultCode 结果码枚举
      * @param cause 原因
      */
     public BusinessException(ResultCode resultCode, Throwable cause) {

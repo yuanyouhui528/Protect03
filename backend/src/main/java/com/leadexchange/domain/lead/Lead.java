@@ -59,6 +59,14 @@ public class Lead extends BaseEntity {
     private String contactPhone;
 
     /**
+     * 联系邮箱
+     */
+    @Column(name = "contact_email", length = 100)
+    @Field(type = FieldType.Keyword)
+    @ApiModelProperty(value = "联系邮箱", example = "zhangsan@example.com")
+    private String contactEmail;
+
+    /**
      * 企业类型
      */
     @Column(name = "company_type", nullable = false, length = 50)
@@ -231,6 +239,14 @@ public class Lead extends BaseEntity {
 
     public void setContactPhone(String contactPhone) {
         this.contactPhone = contactPhone;
+    }
+
+    public String getContactEmail() {
+        return contactEmail;
+    }
+
+    public void setContactEmail(String contactEmail) {
+        this.contactEmail = contactEmail;
     }
 
     public String getCompanyType() {

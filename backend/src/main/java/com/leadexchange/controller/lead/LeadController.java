@@ -5,8 +5,9 @@ import com.leadexchange.domain.lead.Lead;
 import com.leadexchange.domain.lead.LeadStatus;
 import com.leadexchange.domain.lead.AuditStatus;
 import com.leadexchange.common.result.Result;
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
+import java.util.Optional;
 import java.util.List;
 
 /**
@@ -72,16 +74,16 @@ public class LeadController {
      */
     @Operation(summary = "获取线索列表", description = "分页获取线索列表")
     @GetMapping
-    public Result<IPage<Lead>> getLeadList(
+    public Result<Page<Lead>> getLeadList(
             @Parameter(description = "页码") @RequestParam(defaultValue = "1") int page,
             @Parameter(description = "每页大小") @RequestParam(defaultValue = "10") int size,
             @Parameter(description = "线索状态") @RequestParam(required = false) LeadStatus status,
             @Parameter(description = "所有者ID") @RequestParam(required = false) Long ownerId) {
         try {
-            logger.debug("获取线索列表: page={}, size={}, status={}", page, size, status);
+            logger.debug("获取线索列表: page={}, size={}, status={}, ownerId={}", page, size, status, ownerId);
             
-            Page<Lead> pageParam = new Page<>(page, size);
-            IPage<Lead> leadPage = leadService.getLeadPage(pageParam, ownerId, status);
+            Pageable pageable = PageRequest.of(page - 1, size); // Spring Data页码从0开始
+            Page<Lead> leadPage = leadService.getLeadPage(pageable, ownerId, status);
             
             return Result.success("获取线索列表成功", leadPage);
             
@@ -102,10 +104,11 @@ public class LeadController {
         try {
             logger.debug("获取线索详情: {}", id);
             
-            Lead lead = leadService.getLeadById(id);
-            if (lead == null) {
+            Optional<Lead> leadOpt = leadService.getLeadById(id);
+            if (!leadOpt.isPresent()) {
                 return Result.error("线索不存在");
             }
+            Lead lead = leadOpt.get();
             
             // 增加浏览次数
             Long currentUserId = getCurrentUserId(request);
@@ -135,10 +138,11 @@ public class LeadController {
             
             // 验证权限：只有线索所有者或管理员可以更新
             Long currentUserId = getCurrentUserId(request);
-            Lead existingLead = leadService.getLeadById(id);
-            if (existingLead == null) {
+            Optional<Lead> existingLeadOpt = leadService.getLeadById(id);
+            if (!existingLeadOpt.isPresent()) {
                 return Result.error("线索不存在");
             }
+            Lead existingLead = existingLeadOpt.get();
             
             if (!existingLead.getOwnerId().equals(currentUserId) && !isAdmin(request)) {
                 return Result.error("无权限更新此线索");
@@ -169,10 +173,11 @@ public class LeadController {
             
             // 验证权限：只有线索所有者或管理员可以删除
             Long currentUserId = getCurrentUserId(request);
-            Lead existingLead = leadService.getLeadById(id);
-            if (existingLead == null) {
+            Optional<Lead> existingLeadOpt = leadService.getLeadById(id);
+            if (!existingLeadOpt.isPresent()) {
                 return Result.error("线索不存在");
             }
+            Lead existingLead = existingLeadOpt.get();
             
             if (!existingLead.getOwnerId().equals(currentUserId) && !isAdmin(request)) {
                 return Result.error("无权限删除此线索");
@@ -205,10 +210,11 @@ public class LeadController {
             
             // 验证权限
             Long currentUserId = getCurrentUserId(request);
-            Lead existingLead = leadService.getLeadById(id);
-            if (existingLead == null) {
+            Optional<Lead> existingLeadOpt = leadService.getLeadById(id);
+            if (!existingLeadOpt.isPresent()) {
                 return Result.error("线索不存在");
             }
+            Lead existingLead = existingLeadOpt.get();
             
             if (!existingLead.getOwnerId().equals(currentUserId) && !isAdmin(request)) {
                 return Result.error("无权限发布此线索");
@@ -241,10 +247,11 @@ public class LeadController {
             
             // 验证权限
             Long currentUserId = getCurrentUserId(request);
-            Lead existingLead = leadService.getLeadById(id);
-            if (existingLead == null) {
+            Optional<Lead> existingLeadOpt = leadService.getLeadById(id);
+            if (!existingLeadOpt.isPresent()) {
                 return Result.error("线索不存在");
             }
+            Lead existingLead = existingLeadOpt.get();
             
             if (!existingLead.getOwnerId().equals(currentUserId) && !isAdmin(request)) {
                 return Result.error("无权限下架此线索");
@@ -268,15 +275,15 @@ public class LeadController {
      */
     @Operation(summary = "搜索线索", description = "根据关键词搜索线索")
     @GetMapping("/search")
-    public Result<IPage<Lead>> searchLeads(
+    public Result<Page<Lead>> searchLeads(
             @Parameter(description = "搜索关键词") @RequestParam String keyword,
             @Parameter(description = "页码") @RequestParam(defaultValue = "1") int page,
             @Parameter(description = "每页大小") @RequestParam(defaultValue = "10") int size) {
         try {
             logger.debug("搜索线索: keyword={}, page={}, size={}", keyword, page, size);
             
-            Page<Lead> pageParam = new Page<>(page, size);
-            IPage<Lead> leadPage = leadService.searchLeads(keyword, pageParam);
+            Pageable pageable = PageRequest.of(page - 1, size); // Spring Data页码从0开始
+            Page<Lead> leadPage = leadService.searchLeads(keyword, pageable);
             
             return Result.success("搜索线索成功", leadPage);
             
@@ -292,7 +299,7 @@ public class LeadController {
     @Operation(summary = "获取我的线索", description = "获取当前用户的线索列表")
     @GetMapping("/my")
     @PreAuthorize("hasRole('USER')")
-    public Result<IPage<Lead>> getMyLeads(
+    public Result<Page<Lead>> getMyLeads(
             @Parameter(description = "页码") @RequestParam(defaultValue = "1") int page,
             @Parameter(description = "每页大小") @RequestParam(defaultValue = "10") int size,
             @Parameter(description = "线索状态") @RequestParam(required = false) LeadStatus status,
@@ -301,8 +308,8 @@ public class LeadController {
             Long currentUserId = getCurrentUserId(request);
             logger.debug("获取我的线索: userId={}, page={}, size={}", currentUserId, page, size);
             
-            Page<Lead> pageParam = new Page<>(page, size);
-            IPage<Lead> leadPage = leadService.getLeadPage(pageParam, currentUserId, status);
+            Pageable pageable = PageRequest.of(page - 1, size); // Spring Data页码从0开始
+            Page<Lead> leadPage = leadService.getLeadPage(pageable, currentUserId, status);
             
             return Result.success("获取我的线索成功", leadPage);
             
@@ -399,7 +406,7 @@ public class LeadController {
     @Operation(summary = "获取收藏的线索", description = "获取当前用户收藏的线索列表")
     @GetMapping("/favorites")
     @PreAuthorize("hasRole('USER')")
-    public Result<IPage<Lead>> getFavoriteLeads(
+    public Result<Page<Lead>> getFavoriteLeads(
             @Parameter(description = "页码") @RequestParam(defaultValue = "1") int page,
             @Parameter(description = "每页大小") @RequestParam(defaultValue = "10") int size,
             HttpServletRequest request) {
@@ -407,8 +414,8 @@ public class LeadController {
             Long currentUserId = getCurrentUserId(request);
             logger.debug("获取收藏线索: userId={}, page={}, size={}", currentUserId, page, size);
             
-            Page<Lead> pageParam = new Page<>(page, size);
-            IPage<Lead> leadPage = leadService.getFavoriteLeads(currentUserId, pageParam);
+            Pageable pageable = PageRequest.of(page - 1, size); // Spring Data页码从0开始
+            Page<Lead> leadPage = leadService.getFavoriteLeads(currentUserId, pageable);
             
             return Result.success("获取收藏线索成功", leadPage);
             

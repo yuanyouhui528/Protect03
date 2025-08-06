@@ -71,6 +71,13 @@ public interface UserService {
      */
     List<String> getUserRoleCodes(Long userId);
     
+    /**
+     * 根据用户ID获取用户信息
+     * @param userId 用户ID
+     * @return 用户实体
+     */
+    com.leadexchange.domain.user.User getUserById(Long userId);
+    
     // TODO: 定义用户信息更新方法
     // UserInfoResponse updateUserInfo(Long userId, UserUpdateRequest request);
     

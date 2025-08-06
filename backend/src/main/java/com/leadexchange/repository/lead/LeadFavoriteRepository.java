@@ -94,12 +94,4 @@ public interface LeadFavoriteRepository extends BaseMapper<LeadFavorite> {
     @Delete("DELETE FROM lead_favorites WHERE lead_id = #{leadId} AND user_id = #{userId}")
     int deleteByLeadIdAndUserId(@Param("leadId") Long leadId, @Param("userId") Long userId);
 
-    /**
-     * 统计线索的收藏次数
-     * 
-     * @param leadId 线索ID
-     * @return 收藏次数
-     */
-    @Select("SELECT COUNT(*) FROM lead_favorites WHERE lead_id = #{leadId}")
-    int countByLeadId(@Param("leadId") Long leadId);
 }

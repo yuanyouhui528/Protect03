@@ -3,12 +3,18 @@ package com.leadexchange.service.lead;
 import com.leadexchange.domain.lead.Lead;
 import com.leadexchange.domain.lead.LeadStatus;
 import com.leadexchange.domain.lead.AuditStatus;
+import com.leadexchange.domain.lead.LeadRating;
+import com.leadexchange.service.rating.RatingEngineService.RatingTrendData;
+import com.leadexchange.service.rating.RatingEngineService.RatingBatchCondition;
 // import com.baomidou.mybatisplus.core.metadata.IPage;
 // import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 /**
  * 线索服务接口
@@ -49,7 +55,7 @@ public interface LeadService {
      * @param id 线索ID
      * @return 线索详情
      */
-    Lead getLeadById(Long id);
+    Lead getLeadByIdRequired(Long id);
 
     /**
      * 分页查询线索列表
@@ -157,4 +163,47 @@ public interface LeadService {
      * @return 是否取消成功
      */
     boolean unfavoriteLead(Long userId, Long leadId);
+
+    /**
+     * 获取评级分布统计
+     * 
+     * @return 评级分布数据
+     */
+    Map<LeadRating, Long> getRatingDistribution();
+
+    /**
+     * 获取评级趋势数据
+     * 
+     * @param startTime 开始时间
+     * @param endTime 结束时间
+     * @param granularity 时间粒度（day/week/month）
+     * @return 趋势数据列表
+     */
+    List<RatingTrendData> getRatingTrend(LocalDateTime startTime, LocalDateTime endTime, String granularity);
+
+    /**
+     * 根据条件获取线索ID列表
+     * 
+     * @param condition 筛选条件
+     * @return 线索ID列表
+     */
+    List<Long> getLeadIdsByCondition(RatingBatchCondition condition);
+
+    /**
+     * 根据ID获取线索（可选）
+     * 
+     * @param id 线索ID
+     * @return 线索对象
+     */
+    Optional<Lead> getLeadById(Long id);
+
+    /**
+     * 更新线索评级
+     * 
+     * @param leadId 线索ID
+     * @param rating 新评级
+     * @param score 新分数
+     * @return 是否更新成功
+     */
+    boolean updateLeadRating(Long leadId, LeadRating rating, Double score);
 }

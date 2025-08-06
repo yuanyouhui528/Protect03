@@ -10,6 +10,9 @@ import com.leadexchange.domain.lead.LeadView;
 import com.leadexchange.repository.lead.LeadRepository;
 import com.leadexchange.repository.lead.LeadViewRepository;
 import com.leadexchange.repository.lead.LeadFavoriteRepository;
+import com.leadexchange.service.rating.RatingEngineService;
+import com.leadexchange.service.rating.RatingEngineService.RatingTrendData;
+import com.leadexchange.service.rating.RatingEngineService.RatingBatchCondition;
 import com.leadexchange.util.EditDistanceUtil;
 // import com.leadexchange.repository.elasticsearch.LeadSearchRepository;
 // import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -25,9 +28,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * 线索服务实现类
@@ -47,6 +51,9 @@ public class LeadServiceImpl implements LeadService {
     
     @Autowired
     private LeadViewRepository leadViewRepository;
+    
+    @Autowired
+    private RatingEngineService ratingEngineService;
     
     // @Autowired
     // private LeadFavoriteRepository leadFavoriteRepository;
@@ -135,7 +142,7 @@ public class LeadServiceImpl implements LeadService {
     }
 
     @Override
-    public Lead getLeadById(Long id) {
+    public Lead getLeadByIdRequired(Long id) {
         logger.debug("获取线索详情: {}", id);
         
         Lead lead = leadRepository.findById(id).orElse(null);
@@ -145,6 +152,18 @@ public class LeadServiceImpl implements LeadService {
         }
         
         return lead;
+    }
+
+    @Override
+    public Optional<Lead> getLeadById(Long id) {
+        logger.debug("获取线索详情（可选）: {}", id);
+        
+        Lead lead = leadRepository.findById(id).orElse(null);
+        if (lead == null || lead.getDeleted() == 1) {
+            return Optional.empty();
+        }
+        
+        return Optional.of(lead);
     }
 
     @Override
@@ -451,23 +470,27 @@ public class LeadServiceImpl implements LeadService {
     public Page<Lead> getFavoriteLeads(Long userId, Pageable pageable) {
         logger.debug("获取用户收藏的线索: {}", userId);
         
+        // TODO: 暂时注释收藏功能，等待LeadFavoriteRepository实现
         // 获取用户收藏的线索ID列表
-        List<Long> favoriteLeadIds = leadFavoriteRepository.getFavoriteLeadIdsByUserId(userId);
+        // List<Long> favoriteLeadIds = leadFavoriteRepository.getFavoriteLeadIdsByUserId(userId);
         
-        if (favoriteLeadIds.isEmpty()) {
-            return new PageImpl<>(new ArrayList<>(), pageable, 0);
-        }
+        // if (favoriteLeadIds.isEmpty()) {
+        //     return new PageImpl<>(new ArrayList<>(), pageable, 0);
+        // }
         
         // 根据线索ID列表查询线索详情
-        List<Lead> favoriteLeads = leadRepository.findAllById(favoriteLeadIds);
+        // List<Lead> favoriteLeads = leadRepository.findAllById(favoriteLeadIds);
         
         // 手动分页处理
-        int start = (int) pageable.getOffset();
-        int end = Math.min((start + pageable.getPageSize()), favoriteLeads.size());
+        // int start = (int) pageable.getOffset();
+        // int end = Math.min((start + pageable.getPageSize()), favoriteLeads.size());
         
-        List<Lead> pageContent = favoriteLeads.subList(start, end);
+        // List<Lead> pageContent = favoriteLeads.subList(start, end);
         
-        return new PageImpl<>(pageContent, pageable, favoriteLeads.size());
+        // return new PageImpl<>(pageContent, pageable, favoriteLeads.size());
+        
+        logger.warn("收藏功能暂未实现");
+        return new PageImpl<>(new ArrayList<>(), pageable, 0);
     }
 
     @Override
@@ -482,26 +505,28 @@ public class LeadServiceImpl implements LeadService {
                 return false;
             }
             
+            // TODO: 暂时注释收藏功能，等待LeadFavoriteRepository实现
             // 2. 检查是否已收藏
-            boolean isFavorited = leadFavoriteRepository.isFavorited(leadId, userId);
-            if (isFavorited) {
-                logger.warn("用户已收藏此线索: userId={}, leadId={}", userId, leadId);
-                return false;
-            }
+            // boolean isFavorited = leadFavoriteRepository.isFavorited(leadId, userId);
+            // if (isFavorited) {
+            //     logger.warn("用户已收藏此线索: userId={}, leadId={}", userId, leadId);
+            //     return false;
+            // }
             
             // 3. 创建收藏记录
-            LeadFavorite leadFavorite = new LeadFavorite(userId, leadId);
-            int inserted = leadFavoriteRepository.insert(leadFavorite);
-            if (inserted > 0) {
-                // 4. 更新线索收藏数
-                int favoriteCount = leadFavoriteRepository.countByLeadId(leadId);
-                lead.setFavoriteCount(favoriteCount);
-                leadRepository.save(lead);
-                
-                logger.info("收藏成功: userId={}, leadId={}", userId, leadId);
-                return true;
-            }
+            // LeadFavorite leadFavorite = new LeadFavorite(userId, leadId);
+            // int inserted = leadFavoriteRepository.insert(leadFavorite);
+            // if (inserted > 0) {
+            //     // 4. 更新线索收藏数
+            //     int favoriteCount = leadFavoriteRepository.countByLeadId(leadId);
+            //     lead.setFavoriteCount(favoriteCount);
+            //     leadRepository.save(lead);
+            //     
+            //     logger.info("收藏成功: userId={}, leadId={}", userId, leadId);
+            //     return true;
+            // }
             
+            logger.warn("收藏功能暂未实现");
             return false;
             
         } catch (Exception e) {
@@ -519,29 +544,227 @@ public class LeadServiceImpl implements LeadService {
             Lead lead = leadRepository.findById(leadId)
                     .orElseThrow(() -> new RuntimeException("线索不存在"));
             
+            // TODO: 暂时注释收藏功能，等待LeadFavoriteRepository实现
             // 检查是否已收藏
-            boolean isFavorited = leadFavoriteRepository.isFavorited(leadId, userId);
-            if (!isFavorited) {
-                logger.warn("该线索未被收藏: leadId={}, userId={}", leadId, userId);
-                return false;
-            }
+            // boolean isFavorited = leadFavoriteRepository.isFavorited(leadId, userId);
+            // if (!isFavorited) {
+            //     logger.warn("该线索未被收藏: leadId={}, userId={}", leadId, userId);
+            //     return false;
+            // }
             
             // 删除收藏记录
-            int deleted = leadFavoriteRepository.deleteByLeadIdAndUserId(leadId, userId);
-            if (deleted > 0) {
-                // 更新线索的收藏次数
-                int favoriteCount = leadFavoriteRepository.countByLeadId(leadId);
-                lead.setFavoriteCount(favoriteCount);
-                leadRepository.save(lead);
-                
-                logger.info("取消收藏成功: leadId={}, userId={}", leadId, userId);
-                return true;
-            }
+            // int deleted = leadFavoriteRepository.deleteByLeadIdAndUserId(leadId, userId);
+            // if (deleted > 0) {
+            //     // 更新线索的收藏次数
+            //     int favoriteCount = leadFavoriteRepository.countByLeadId(leadId);
+            //     lead.setFavoriteCount(favoriteCount);
+            //     leadRepository.save(lead);
+            //     
+            //     logger.info("取消收藏成功: leadId={}, userId={}", leadId, userId);
+            //     return true;
+            // }
             
+            logger.warn("取消收藏功能暂未实现");
             return false;
             
         } catch (Exception e) {
             logger.error("取消收藏失败: leadId=" + leadId + ", userId=" + userId, e);
+            return false;
+        }
+    }
+
+    @Override
+    public Map<LeadRating, Long> getRatingDistribution() {
+        logger.debug("获取线索评级分布统计");
+        
+        try {
+            // 查询所有有效线索的评级分布
+            List<Lead> allLeads = leadRepository.findAll().stream()
+                .filter(lead -> lead.getDeleted() == 0)
+                .collect(Collectors.toList());
+            
+            Map<LeadRating, Long> distribution = new HashMap<>();
+            // 初始化所有评级的计数为0
+            for (LeadRating rating : LeadRating.values()) {
+                distribution.put(rating, 0L);
+            }
+            
+            // 统计各评级的数量
+            for (Lead lead : allLeads) {
+                if (lead.getRating() != null) {
+                    distribution.merge(lead.getRating(), 1L, Long::sum);
+                }
+            }
+            
+            logger.debug("评级分布统计完成: {}", distribution);
+            return distribution;
+            
+        } catch (Exception e) {
+            logger.error("获取评级分布统计失败", e);
+            return new HashMap<>();
+        }
+    }
+
+    @Override
+    public List<RatingTrendData> getRatingTrend(LocalDateTime startTime, LocalDateTime endTime, String granularity) {
+        logger.debug("获取评级趋势数据: startTime={}, endTime={}, granularity={}", startTime, endTime, granularity);
+        
+        try {
+            List<RatingTrendData> trendData = new ArrayList<>();
+            
+            // 根据粒度确定时间间隔
+            Duration interval;
+            switch (granularity.toLowerCase()) {
+                case "hour":
+                    interval = Duration.ofHours(1);
+                    break;
+                case "day":
+                    interval = Duration.ofDays(1);
+                    break;
+                case "week":
+                    interval = Duration.ofDays(7);
+                    break;
+                case "month":
+                    interval = Duration.ofDays(30);
+                    break;
+                default:
+                    interval = Duration.ofDays(1);
+            }
+            
+            LocalDateTime currentTime = startTime;
+            while (currentTime.isBefore(endTime)) {
+                LocalDateTime nextTime = currentTime.plus(interval);
+                if (nextTime.isAfter(endTime)) {
+                    nextTime = endTime;
+                }
+                
+                // 查询该时间段内的线索
+                final LocalDateTime finalCurrentTime = currentTime;
+                final LocalDateTime finalNextTime = nextTime;
+                List<Lead> leadsInPeriod = leadRepository.findAll().stream()
+                    .filter(lead -> lead.getDeleted() == 0 &&
+                                   lead.getCreateTime().isAfter(finalCurrentTime) &&
+                                   lead.getCreateTime().isBefore(finalNextTime))
+                    .collect(Collectors.toList());
+                
+                // 统计各评级数量
+                Map<LeadRating, Long> periodDistribution = new HashMap<>();
+                for (LeadRating rating : LeadRating.values()) {
+                    periodDistribution.put(rating, 0L);
+                }
+                
+                for (Lead lead : leadsInPeriod) {
+                    if (lead.getRating() != null) {
+                        periodDistribution.merge(lead.getRating(), 1L, Long::sum);
+                    }
+                }
+                
+                // 创建趋势数据点
+                RatingTrendData dataPoint = new RatingTrendData();
+                dataPoint.setDate(currentTime.toString());
+                dataPoint.setRatingCounts(periodDistribution);
+                
+                // 计算平均分数
+                double averageScore = leadsInPeriod.stream()
+                    .filter(lead -> lead.getRatingScore() != null)
+                    .mapToInt(Lead::getRatingScore)
+                    .average()
+                    .orElse(0.0);
+                dataPoint.setAverageScore(averageScore);
+                
+                trendData.add(dataPoint);
+                currentTime = nextTime;
+            }
+            
+            logger.debug("评级趋势数据获取完成，数据点数量: {}", trendData.size());
+            return trendData;
+            
+        } catch (Exception e) {
+            logger.error("获取评级趋势数据失败", e);
+            return new ArrayList<>();
+        }
+    }
+
+    @Override
+    public List<Long> getLeadIdsByCondition(RatingBatchCondition condition) {
+        logger.debug("根据条件获取线索ID列表: {}", condition);
+        
+        try {
+            List<Lead> leads = new ArrayList<>();
+            
+            // 根据不同条件类型查询线索
+            if (condition.getLeadIds() != null && !condition.getLeadIds().isEmpty()) {
+                // 按指定ID列表查询
+                leads = leadRepository.findAllById(condition.getLeadIds());
+            } else {
+                // 按其他条件查询
+                leads = leadRepository.findAll().stream()
+                    .filter(lead -> lead.getDeleted() == 0)
+                    .collect(Collectors.toList());
+                
+                // 按日期范围过滤（使用dateFrom和dateTo字符串）
+                if (condition.getDateFrom() != null && condition.getDateTo() != null) {
+                    try {
+                        LocalDateTime startTime = LocalDateTime.parse(condition.getDateFrom() + "T00:00:00");
+                        LocalDateTime endTime = LocalDateTime.parse(condition.getDateTo() + "T23:59:59");
+                        leads = leads.stream()
+                            .filter(lead -> lead.getCreateTime().isAfter(startTime) &&
+                                           lead.getCreateTime().isBefore(endTime))
+                            .collect(Collectors.toList());
+                    } catch (Exception e) {
+                        logger.warn("日期格式解析失败: dateFrom={}, dateTo={}", condition.getDateFrom(), condition.getDateTo());
+                    }
+                }
+                
+                // 按评级过滤
+                if (condition.getRatings() != null && !condition.getRatings().isEmpty()) {
+                    leads = leads.stream()
+                        .filter(lead -> condition.getRatings().contains(lead.getRating()))
+                        .collect(Collectors.toList());
+                }
+                
+                // 按用户ID过滤（使用userId字段）
+                if (condition.getUserId() != null) {
+                    leads = leads.stream()
+                        .filter(lead -> condition.getUserId().equals(lead.getCreateBy()))
+                        .collect(Collectors.toList());
+                }
+            }
+            
+            List<Long> leadIds = leads.stream()
+                .map(Lead::getId)
+                .collect(Collectors.toList());
+            
+            logger.debug("根据条件查询到 {} 个线索ID", leadIds.size());
+            return leadIds;
+            
+        } catch (Exception e) {
+            logger.error("根据条件获取线索ID失败", e);
+            return new ArrayList<>();
+        }
+    }
+
+
+
+    @Override
+    public boolean updateLeadRating(Long leadId, LeadRating rating, Double score) {
+        logger.info("更新线索评级: leadId={}, rating={}, score={}", leadId, rating, score);
+        
+        try {
+            Lead lead = leadRepository.findById(leadId)
+                .orElseThrow(() -> new RuntimeException("线索不存在: " + leadId));
+            
+            lead.setRating(rating);
+            lead.setRatingScore(score.intValue());
+            lead.setUpdateTime(LocalDateTime.now());
+            
+            leadRepository.save(lead);
+            
+            logger.info("线索评级更新成功: leadId={}, rating={}, score={}", leadId, rating, score);
+            return true;
+            
+        } catch (Exception e) {
+            logger.error("更新线索评级失败: leadId=" + leadId, e);
             return false;
         }
     }

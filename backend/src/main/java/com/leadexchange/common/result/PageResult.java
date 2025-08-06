@@ -111,6 +111,22 @@ public class PageResult<T> implements Serializable {
     public static <T> PageResult<T> of(List<T> records, Long total, Integer page, Integer size) {
         return new PageResult<>(records, total, page, size);
     }
+    
+    /**
+     * 从Spring Data Page对象创建分页结果
+     * 
+     * @param page Spring Data Page对象
+     * @param <T> 数据类型
+     * @return 分页结果
+     */
+    public static <T> PageResult<T> of(org.springframework.data.domain.Page<T> page) {
+        return new PageResult<>(
+            page.getContent(),
+            page.getTotalElements(),
+            page.getNumber() + 1, // Spring Data页码从0开始，我们从1开始
+            page.getSize()
+        );
+    }
 
     /**
      * 创建空分页结果

@@ -237,8 +237,8 @@ router.beforeEach(async (to, from, next) => {
     return
   }
   
-  // 检查是否需要登录（默认需要登录）
-  const requiresAuth = to.meta?.requiresAuth !== false
+  // 检查是否需要登录（临时禁用认证检查）
+  const requiresAuth = false // 临时设置为 false，允许所有页面访问
   
   if (requiresAuth) {
     // 检查登录状态

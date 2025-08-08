@@ -206,4 +206,21 @@ public interface LeadService {
      * @return 是否更新成功
      */
     boolean updateLeadRating(Long leadId, LeadRating rating, Double score);
+
+    /**
+     * 根据ID列表批量获取线索
+     * 
+     * @param ids 线索ID列表
+     * @return 线索列表
+     */
+    List<Lead> getLeadsByIds(List<Long> ids);
+
+    /**
+     * 转移线索所有权
+     * 
+     * @param leadId 线索ID
+     * @param newOwnerId 新所有者ID
+     * @return 是否转移成功
+     */
+    boolean transferLeadOwnership(Long leadId, Long newOwnerId);
 }

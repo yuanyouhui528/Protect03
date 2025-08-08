@@ -76,6 +76,7 @@
               <span>交换中心</span>
             </template>
             <el-menu-item index="/exchange/market">交换市场</el-menu-item>
+            <el-menu-item index="/exchange/applications">申请管理</el-menu-item>
             <el-menu-item index="/exchange/history">交换记录</el-menu-item>
             <el-menu-item index="/exchange/rules">交换规则</el-menu-item>
           </el-sub-menu>

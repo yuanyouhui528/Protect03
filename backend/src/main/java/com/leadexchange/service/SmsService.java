@@ -38,6 +38,14 @@ public interface SmsService {
      * @return 是否验证成功
      */
     boolean verifyCode(String phone, String code, String type);
+    
+    /**
+     * 发送短信
+     * @param phone 手机号
+     * @param content 短信内容
+     * @return 是否发送成功
+     */
+    boolean sendSms(String phone, String content);
 
     /**
      * 检查发送频率限制

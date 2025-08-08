@@ -87,6 +87,15 @@ public class ApiResponse<T> implements Serializable {
     }
 
     /**
+     * 创建成功响应（无数据，默认消息）
+     * 
+     * @return 成功响应
+     */
+    public static ApiResponse<Void> success() {
+        return success(null, "操作成功");
+    }
+    
+    /**
      * 创建成功响应（无数据）
      * 
      * @param message 响应消息

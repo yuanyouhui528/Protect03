@@ -151,6 +151,14 @@ const routes: RouteRecordRaw[] = [
             meta: {
               title: '交换规则'
             }
+          },
+          {
+            path: 'applications',
+            name: 'ExchangeApplications',
+            component: () => import('@/views/exchange/ExchangeApplications.vue'),
+            meta: {
+              title: '交换申请管理'
+            }
           }
         ]
       },

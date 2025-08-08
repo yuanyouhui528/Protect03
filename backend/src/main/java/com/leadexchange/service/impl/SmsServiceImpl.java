@@ -85,6 +85,40 @@ public class SmsServiceImpl implements SmsService {
     }
 
     @Override
+    public boolean sendSms(String phone, String content) {
+        try {
+            // 检查发送限制
+            if (!checkSendLimit(phone)) {
+                log.warn("短信发送频率限制，手机号: {}", phone);
+                return false;
+            }
+            
+            // 调用第三方短信服务商发送短信
+            boolean result = sendSmsToProvider(phone, content, "custom");
+            
+            if (result) {
+                // 设置发送间隔限制
+                String intervalKey = SMS_LIMIT_PREFIX + "interval:" + phone;
+                redisTemplate.opsForValue().set(intervalKey, "1", Duration.ofSeconds(SEND_LIMIT_SECONDS));
+                
+                // 增加每日发送次数
+                String dailyKey = SMS_LIMIT_PREFIX + "daily:" + phone;
+                redisTemplate.opsForValue().increment(dailyKey);
+                redisTemplate.expire(dailyKey, Duration.ofDays(1));
+                
+                log.info("短信发送成功，手机号: {}", phone);
+            } else {
+                log.error("短信发送失败，手机号: {}", phone);
+            }
+            
+            return result;
+        } catch (Exception e) {
+            log.error("短信发送异常，手机号: {}", phone, e);
+            return false;
+        }
+    }
+
+    @Override
     public boolean checkSendLimit(String phone) {
         try {
             // 检查发送间隔限制
@@ -186,15 +220,21 @@ public class SmsServiceImpl implements SmsService {
      * 这里使用模拟发送，实际项目中需要集成真实的短信服务商
      * 
      * @param phone 手机号
-     * @param code 验证码
-     * @param type 验证码类型
+     * @param content 短信内容（验证码或自定义内容）
+     * @param type 短信类型
      * @return 是否发送成功
      */
-    private boolean sendSmsToProvider(String phone, String code, String type) {
+    private boolean sendSmsToProvider(String phone, String content, String type) {
         try {
-            // 模拟发送短信
-            log.info("[模拟短信] 发送给 {}: 您的{}验证码是 {}，有效期{}分钟。", 
-                    phone, getTypeDesc(type), code, CODE_EXPIRE_MINUTES);
+            // 根据类型判断是验证码还是自定义内容
+            if ("custom".equals(type)) {
+                // 自定义内容短信
+                log.info("[模拟短信] 发送给 {}: {}", phone, content);
+            } else {
+                // 验证码短信
+                log.info("[模拟短信] 发送给 {}: 您的{}验证码是 {}，有效期{}分钟。", 
+                        phone, getTypeDesc(type), content, CODE_EXPIRE_MINUTES);
+            }
             
             // 模拟网络延迟
             Thread.sleep(100);

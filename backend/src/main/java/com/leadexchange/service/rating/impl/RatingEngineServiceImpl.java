@@ -14,6 +14,7 @@ import com.leadexchange.common.result.ResultCode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.data.domain.Page;
@@ -41,6 +42,7 @@ public class RatingEngineServiceImpl implements RatingEngineService {
     private static final Logger log = LoggerFactory.getLogger(RatingEngineServiceImpl.class);
 
     @Autowired
+    @Lazy
     private LeadService leadService;
     
     @Autowired

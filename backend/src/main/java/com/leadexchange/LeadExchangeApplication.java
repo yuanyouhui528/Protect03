@@ -25,8 +25,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @EnableAsync
 @EnableScheduling
 @EnableJpaRepositories(basePackages = {
-    "com.leadexchange.repository.user",
-    "com.leadexchange.repository.lead"
+    "com.leadexchange.repository"
 })
 public class LeadExchangeApplication {
 

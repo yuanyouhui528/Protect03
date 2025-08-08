@@ -43,6 +43,14 @@ public class Lead extends BaseEntity {
     private String companyName;
 
     /**
+     * 线索标题
+     */
+    @Column(name = "title", length = 200)
+    @Field(type = FieldType.Text, analyzer = "ik_max_word")
+    @ApiModelProperty(value = "线索标题", example = "寻找优质办公场地")
+    private String title;
+
+    /**
      * 联系人
      */
     @Column(name = "contact_person", nullable = false, length = 100)
@@ -225,6 +233,14 @@ public class Lead extends BaseEntity {
         this.companyName = companyName;
     }
 
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
     public String getContactPerson() {
         return contactPerson;
     }
@@ -383,6 +399,14 @@ public class Lead extends BaseEntity {
 
     public void setFavoriteCount(Integer favoriteCount) {
         this.favoriteCount = favoriteCount;
+    }
+
+    /**
+     * 判断线索是否可交换
+     * @return 是否可交换
+     */
+    public boolean isExchangeable() {
+        return this.status != null && this.status.isExchangeable();
     }
 
     @Override

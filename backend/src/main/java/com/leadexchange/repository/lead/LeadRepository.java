@@ -50,12 +50,12 @@ public interface LeadRepository extends JpaRepository<Lead, Long> {
     List<Lead> findByStatusAndDeleted(LeadStatus status, Integer deleted);
     
     /**
-     * 根据发布者ID查找线索
+     * 根据所有者ID查找线索
      * 
-     * @param publisherId 发布者ID
+     * @param ownerId 所有者ID
      * @return 线索列表
      */
-    List<Lead> findByPublisherId(Long publisherId);
+    List<Lead> findByOwnerId(Long ownerId);
     
     /**
      * 根据审核状态查找线索
@@ -72,7 +72,7 @@ public interface LeadRepository extends JpaRepository<Lead, Long> {
      * @param endTime 结束时间
      * @return 线索列表
      */
-    List<Lead> findByCreatedTimeBetween(LocalDateTime startTime, LocalDateTime endTime);
+    List<Lead> findByCreateTimeBetween(LocalDateTime startTime, LocalDateTime endTime);
     
     /**
      * 根据投资金额范围查找线索
@@ -108,10 +108,10 @@ public interface LeadRepository extends JpaRepository<Lead, Long> {
     long countByStatus(LeadStatus status);
     
     /**
-     * 统计指定发布者的线索数量
+     * 统计指定所有者的线索数量
      * 
-     * @param publisherId 发布者ID
+     * @param ownerId 所有者ID
      * @return 线索数量
      */
-    long countByPublisherId(Long publisherId);
+    long countByOwnerId(Long ownerId);
 }

@@ -768,4 +768,59 @@ public class LeadServiceImpl implements LeadService {
             return false;
         }
     }
+
+    @Override
+    public List<Lead> getLeadsByIds(List<Long> ids) {
+        logger.debug("根据ID列表批量获取线索: {}", ids);
+        
+        if (ids == null || ids.isEmpty()) {
+            logger.debug("ID列表为空，返回空列表");
+            return new ArrayList<>();
+        }
+        
+        try {
+            List<Lead> leads = leadRepository.findAllById(ids);
+            // 过滤掉已删除的线索
+            List<Lead> validLeads = leads.stream()
+                .filter(lead -> lead.getDeleted() == 0)
+                .collect(Collectors.toList());
+            
+            logger.debug("批量获取线索成功，总数: {}, 有效数: {}", leads.size(), validLeads.size());
+            return validLeads;
+            
+        } catch (Exception e) {
+            logger.error("批量获取线索失败: ids=" + ids, e);
+            return new ArrayList<>();
+        }
+    }
+
+    @Override
+    public boolean transferLeadOwnership(Long leadId, Long newOwnerId) {
+        logger.info("转移线索所有权: leadId={}, newOwnerId={}", leadId, newOwnerId);
+        
+        try {
+            Lead lead = leadRepository.findById(leadId)
+                .orElseThrow(() -> new RuntimeException("线索不存在: " + leadId));
+            
+            // 检查线索是否已删除
+            if (lead.getDeleted() == 1) {
+                logger.warn("线索已删除，无法转移所有权: leadId={}", leadId);
+                return false;
+            }
+            
+            // 更新所有者
+            lead.setCreateBy(newOwnerId);
+            lead.setUpdateTime(LocalDateTime.now());
+            lead.setUpdateBy(newOwnerId);
+            
+            leadRepository.save(lead);
+            
+            logger.info("线索所有权转移成功: leadId={}, newOwnerId={}", leadId, newOwnerId);
+            return true;
+            
+        } catch (Exception e) {
+            logger.error("转移线索所有权失败: leadId=" + leadId + ", newOwnerId=" + newOwnerId, e);
+            return false;
+        }
+    }
 }

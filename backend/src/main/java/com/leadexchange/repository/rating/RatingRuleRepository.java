@@ -225,7 +225,7 @@ public interface RatingRuleRepository extends JpaRepository<RatingRule, Long> {
      * @param enabled 启用状态
      * @return 更新的记录数
      */
-    @Query("UPDATE RatingRule r SET r.enabled = :enabled WHERE r.id IN :ids")
+    @Query("UPDATE RatingRule r SET r.isEnabled = :enabled WHERE r.id IN :ids")
     int batchUpdateEnabled(@Param("ids") List<Long> ids, @Param("enabled") boolean enabled);
 
     /**
@@ -243,9 +243,10 @@ public interface RatingRuleRepository extends JpaRepository<RatingRule, Long> {
      * @return 核心评级规则列表
      */
     @Query("SELECT r FROM RatingRule r WHERE r.ruleType IN " +
-           "(com.leadexchange.domain.rating.RatingRuleType.INFORMATION_COMPLETENESS, " +
-           "com.leadexchange.domain.rating.RatingRuleType.ENTERPRISE_QUALIFICATION, " +
-           "com.leadexchange.domain.rating.RatingRuleType.ENTERPRISE_SCALE) " +
+           "(com.leadexchange.domain.rating.RatingRuleType.COMPLETENESS, " +
+           "com.leadexchange.domain.rating.RatingRuleType.QUALIFICATION, " +
+           "com.leadexchange.domain.rating.RatingRuleType.SCALE, " +
+           "com.leadexchange.domain.rating.RatingRuleType.INDUSTRY_VALUE) " +
            "AND r.isEnabled = true ORDER BY r.sortOrder")
     List<RatingRule> findCoreRules();
 
@@ -255,9 +256,10 @@ public interface RatingRuleRepository extends JpaRepository<RatingRule, Long> {
      * @return 扩展评级规则列表
      */
     @Query("SELECT r FROM RatingRule r WHERE r.ruleType NOT IN " +
-           "(com.leadexchange.domain.rating.RatingRuleType.INFORMATION_COMPLETENESS, " +
-           "com.leadexchange.domain.rating.RatingRuleType.ENTERPRISE_QUALIFICATION, " +
-           "com.leadexchange.domain.rating.RatingRuleType.ENTERPRISE_SCALE) " +
+           "(com.leadexchange.domain.rating.RatingRuleType.COMPLETENESS, " +
+           "com.leadexchange.domain.rating.RatingRuleType.QUALIFICATION, " +
+           "com.leadexchange.domain.rating.RatingRuleType.SCALE, " +
+           "com.leadexchange.domain.rating.RatingRuleType.INDUSTRY_VALUE) " +
            "AND r.isEnabled = true ORDER BY r.sortOrder")
     List<RatingRule> findExtendedRules();
 

@@ -30,6 +30,10 @@ const SystemAnalytics = () => import('@/views/analytics/SystemAnalytics.vue')
 // 用户管理模块
 const UserProfile = () => import('@/views/UserProfile.vue')
 
+// 通知管理模块
+const NotificationList = () => import('@/views/notification/NotificationList.vue')
+const NotificationSettings = () => import('@/views/notification/NotificationSettings.vue')
+
 // 路由配置
 const routes: RouteRecordRaw[] = [
   {
@@ -197,6 +201,33 @@ const routes: RouteRecordRaw[] = [
           title: '个人设置',
           icon: 'User'
         }
+      },
+      {
+        path: 'notifications',
+        name: 'Notifications',
+        redirect: '/notifications/list',
+        meta: {
+          title: '通知中心',
+          icon: 'Bell'
+        },
+        children: [
+          {
+            path: 'list',
+            name: 'NotificationList',
+            component: NotificationList,
+            meta: {
+              title: '消息列表'
+            }
+          },
+          {
+            path: 'settings',
+            name: 'NotificationSettings',
+            component: NotificationSettings,
+            meta: {
+              title: '消息设置'
+            }
+          }
+        ]
       }
     ]
   },

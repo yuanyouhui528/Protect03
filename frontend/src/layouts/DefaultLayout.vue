@@ -25,9 +25,7 @@
         <!-- 用户操作区 -->
         <div class="user-section">
           <!-- 通知中心 -->
-          <el-badge :value="unreadCount" class="notification-badge">
-            <el-button :icon="Bell" circle @click="showNotifications" />
-          </el-badge>
+          <NotificationCenter />
           
           <!-- 用户头像和菜单 -->
           <el-dropdown @command="handleUserCommand">
@@ -129,7 +127,6 @@ import { ref, computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import {
-  Bell,
   ArrowDown,
   Document,
   Switch,
@@ -137,6 +134,7 @@ import {
   Expand,
   Fold
 } from '@element-plus/icons-vue'
+import NotificationCenter from '@/components/business/NotificationCenter.vue'
 
 // 路由相关
 const route = useRoute()
@@ -155,8 +153,7 @@ const userInfo = ref({
   avatar: 'https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png'
 })
 
-// 通知数量
-const unreadCount = ref(5)
+
 
 // 当前激活的菜单项
 const activeIndex = computed(() => {
@@ -190,10 +187,7 @@ const toggleSidebar = () => {
   isCollapse.value = !isCollapse.value
 }
 
-// 显示通知
-const showNotifications = () => {
-  ElMessage.info('通知功能开发中...')
-}
+
 
 // 用户操作处理
 const handleUserCommand = (command: string) => {

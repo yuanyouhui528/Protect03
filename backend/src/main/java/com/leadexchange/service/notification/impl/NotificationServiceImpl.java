@@ -783,4 +783,72 @@ public class NotificationServiceImpl implements NotificationService {
         logger.debug("发送推送通知: id={}", notification.getId());
         return true;
     }
+    
+    @Override
+    @Transactional(readOnly = true)
+    public NotificationSettings getNotificationSettings(Long userId) {
+        logger.info("获取用户通知设置: userId={}", userId);
+        
+        // 查询用户的通知设置，如果不存在则创建默认设置
+        Optional<NotificationSettings> settingsOpt = settingsRepository.findByUserId(userId);
+        
+        if (settingsOpt.isPresent()) {
+            return settingsOpt.get();
+        }
+        
+        // 创建默认设置
+        NotificationSettings defaultSettings = new NotificationSettings();
+        defaultSettings.setUserId(userId);
+        defaultSettings.setNotificationType(NotificationType.SYSTEM);
+        defaultSettings.setSystemEnabled(true);
+        defaultSettings.setEmailEnabled(false);
+        defaultSettings.setSmsEnabled(false);
+        defaultSettings.setWechatEnabled(false);
+        defaultSettings.setPushEnabled(true);
+        defaultSettings.setDoNotDisturbEnabled(false);
+        defaultSettings.setFrequencyLimit(100); // 默认每天最多100条
+        defaultSettings.setCreatedAt(LocalDateTime.now());
+        defaultSettings.setUpdatedAt(LocalDateTime.now());
+        
+        return settingsRepository.save(defaultSettings);
+    }
+    
+    @Override
+    @Transactional
+    public NotificationSettings updateNotificationSettings(Long userId, NotificationType notificationType, 
+                                                          Boolean systemEnabled, Boolean emailEnabled, Boolean smsEnabled) {
+        logger.info("更新用户通知设置: userId={}, type={}, system={}, email={}, sms={}", 
+                   userId, notificationType, systemEnabled, emailEnabled, smsEnabled);
+        
+        // 查询现有设置
+        Optional<NotificationSettings> settingsOpt = settingsRepository.findByUserIdAndNotificationType(userId, notificationType);
+        
+        NotificationSettings settings;
+        if (settingsOpt.isPresent()) {
+            settings = settingsOpt.get();
+        } else {
+            // 创建新设置
+            settings = new NotificationSettings();
+            settings.setUserId(userId);
+            settings.setNotificationType(notificationType);
+            settings.setDoNotDisturbEnabled(false);
+            settings.setFrequencyLimit(100);
+            settings.setCreatedAt(LocalDateTime.now());
+        }
+        
+        // 更新设置
+        if (systemEnabled != null) {
+            settings.setSystemEnabled(systemEnabled);
+        }
+        if (emailEnabled != null) {
+            settings.setEmailEnabled(emailEnabled);
+        }
+        if (smsEnabled != null) {
+            settings.setSmsEnabled(smsEnabled);
+        }
+        
+        settings.setUpdatedAt(LocalDateTime.now());
+        
+        return settingsRepository.save(settings);
+    }
 }

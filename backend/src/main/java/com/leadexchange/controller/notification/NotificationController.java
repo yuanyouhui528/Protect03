@@ -5,6 +5,7 @@ import com.leadexchange.domain.notification.Notification;
 import com.leadexchange.domain.notification.NotificationSettings;
 import com.leadexchange.domain.notification.NotificationType;
 import com.leadexchange.domain.notification.SendChannel;
+import com.leadexchange.dto.notification.NotificationSettingsUpdateRequest;
 import com.leadexchange.service.notification.NotificationService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -239,43 +240,46 @@ public class NotificationController {
      * 获取用户通知设置
      * 
      * @param authentication 认证信息
-     * @return 通知设置列表
+     * @return 通知设置
      */
     @Operation(summary = "获取通知设置", description = "获取用户的通知设置")
     @GetMapping("/settings")
-    public ApiResponse<List<NotificationSettings>> getNotificationSettings(Authentication authentication) {
+    public ApiResponse<NotificationSettings> getNotificationSettings(Authentication authentication) {
         
         Long userId = getUserId(authentication);
-        // 这里需要实现获取用户通知设置的逻辑
-        // 由于NotificationService中没有相关方法，这里先返回空列表
+        NotificationSettings settings = notificationService.getNotificationSettings(userId);
         
         logger.info("获取通知设置: userId={}", userId);
         
-        return ApiResponse.success(List.of());
+        return ApiResponse.success(settings);
     }
     
     /**
      * 更新通知设置
      * 
      * @param authentication 认证信息
-     * @param settings 通知设置
-     * @return 操作结果
+     * @param updateRequest 通知设置更新请求
+     * @return 更新后的通知设置
      */
     @Operation(summary = "更新通知设置", description = "更新用户的通知设置")
     @PostMapping("/settings")
-    public ApiResponse<Void> updateNotificationSettings(
+    public ApiResponse<NotificationSettings> updateNotificationSettings(
             Authentication authentication,
-            @Parameter(description = "通知设置") @Valid @RequestBody NotificationSettings settings) {
+            @Parameter(description = "通知设置更新请求") @Valid @RequestBody NotificationSettingsUpdateRequest updateRequest) {
         
         Long userId = getUserId(authentication);
-        settings.setUserId(userId);
         
-        // 这里需要实现更新用户通知设置的逻辑
-        // 由于NotificationService中没有相关方法，这里先记录日志
+        NotificationSettings updatedSettings = notificationService.updateNotificationSettings(
+            userId, 
+            updateRequest.getNotificationType(),
+            updateRequest.getSystemEnabled(),
+            updateRequest.getEmailEnabled(),
+            updateRequest.getSmsEnabled()
+        );
         
-        logger.info("更新通知设置: userId={}, settings={}", userId, settings);
+        logger.info("更新通知设置: userId={}, type={}", userId, updateRequest.getNotificationType());
         
-        return ApiResponse.success();
+        return ApiResponse.success(updatedSettings);
     }
     
     /**

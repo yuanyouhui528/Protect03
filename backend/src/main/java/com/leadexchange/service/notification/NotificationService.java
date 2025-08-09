@@ -1,6 +1,7 @@
 package com.leadexchange.service.notification;
 
 import com.leadexchange.domain.notification.Notification;
+import com.leadexchange.domain.notification.NotificationSettings;
 import com.leadexchange.domain.notification.NotificationType;
 import com.leadexchange.domain.notification.SendChannel;
 import com.leadexchange.domain.notification.SendStatus;
@@ -377,4 +378,25 @@ public interface NotificationService {
     Map<String, Integer> createAndSendBatchNotifications(List<Long> recipientIds, NotificationType notificationType, 
                                                         SendChannel sendChannel, String templateCode, 
                                                         Map<String, Object> templateData, Integer priority);
+    
+    /**
+     * 获取用户通知设置
+     * 
+     * @param userId 用户ID
+     * @return 通知设置
+     */
+    NotificationSettings getNotificationSettings(Long userId);
+    
+    /**
+     * 更新用户通知设置
+     * 
+     * @param userId 用户ID
+     * @param notificationType 通知类型
+     * @param systemEnabled 系统通知是否启用
+     * @param emailEnabled 邮件通知是否启用
+     * @param smsEnabled 短信通知是否启用
+     * @return 更新后的通知设置
+     */
+    NotificationSettings updateNotificationSettings(Long userId, NotificationType notificationType, 
+                                                   Boolean systemEnabled, Boolean emailEnabled, Boolean smsEnabled);
 }
